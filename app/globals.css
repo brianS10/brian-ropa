@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+/* ========================================
+   SISTEMA DE INVENTARIO - ESTILOS GLOBALES
+   Colores y variables CSS personalizadas
+   ======================================== */
+
+:root {
+  --color-primario: #2563eb;
+  --color-exito: #16a34a;
+  --color-peligro: #dc2626;
+  --color-advertencia: #f59e0b;
+  --fondo: #f8fafc;
+  --fondo-tarjeta: #ffffff;
+  --texto-principal: #0f172a;
+  --texto-secundario: #64748b;
+  --borde: #e2e8f0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fondo: #0f172a;
+    --fondo-tarjeta: #1e293b;
+    --texto-principal: #f1f5f9;
+    --texto-secundario: #94a3b8;
+    --borde: #334155;
+  }
+}
+
+body {
+  background: var(--fondo);
+  color: var(--texto-principal);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Scrollbar personalizado para móvil */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--texto-secundario);
+  border-radius: 4px;
+}
+
+/* Clase utilitaria para el safe-area en móviles (notch del iPhone) */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+}
