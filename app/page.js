@@ -61,7 +61,7 @@ export default function PaginaInicio() {
       </div>
 
       {/* Versión */}
-      <p className="mt-10 text-xs text-slate-400">v1.0.0 - PWA</p>
+      <p className="mt-10 text-xs text-slate-400">v1.0.0 - Brian app de ropita 😗</p>
     </main>
   );
 }
