@@ -1,7 +1,7 @@
 /**
  * Página: Carrito del Cliente
  * ============================
- * Muestra los productos seleccionados y permite confirmar el pedido
+ * Muestra los productos seleccionados y permite confirmar el pedido via WhatsApp
  */
 
 'use client'
@@ -9,12 +9,15 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Minus, Plus, Trash2, ShoppingBag } from 'lucide-react'
+import { ArrowLeft, Minus, Plus, Trash2, ShoppingBag, MessageCircle } from 'lucide-react'
 import { usarCarritoCliente } from '@/hooks/usarCarritoCliente'
 import { usarPedidos } from '@/hooks/usarPedidos'
 import { formatearMoneda } from '@/lib/utilidades'
 import BotonPrimario from '@/componentes/ui/BotonPrimario'
 import EntradaTexto from '@/componentes/ui/EntradaTexto'
+
+// Número de WhatsApp del vendedor (tu hermano)
+const WHATSAPP_VENDEDOR = '5215582258230' // México: 521 + número
 
 export default function PaginaCarrito() {
   const router = useRouter()
@@ -40,7 +43,36 @@ export default function PaginaCarrito() {
 
   const total = obtenerTotal()
 
-  // Enviar pedido
+  // Generar mensaje de WhatsApp con el pedido
+  const generarMensajeWhatsApp = (pedidoId) => {
+    let mensaje = `🛒 *NUEVO PEDIDO*\n`
+    mensaje += `━━━━━━━━━━━━━━━━━━\n\n`
+    mensaje += `👤 *Cliente:* ${datosCliente.nombre}\n`
+    mensaje += `📱 *Teléfono:* ${datosCliente.telefono}\n`
+    if (datosCliente.notas) {
+      mensaje += `📝 *Notas:* ${datosCliente.notas}\n`
+    }
+    mensaje += `\n📦 *PRODUCTOS:*\n`
+    mensaje += `━━━━━━━━━━━━━━━━━━\n`
+    
+    carrito.forEach((item, index) => {
+      mensaje += `\n${index + 1}. *${item.nombre_producto}*\n`
+      mensaje += `   • Talla: ${item.talla}\n`
+      mensaje += `   • Color: ${item.color}\n`
+      mensaje += `   • Cantidad: ${item.cantidad}\n`
+      mensaje += `   • Precio: ${formatearMoneda(item.precio_venta)} c/u\n`
+      mensaje += `   • Subtotal: ${formatearMoneda(item.precio_venta * item.cantidad)}\n`
+    })
+    
+    mensaje += `\n━━━━━━━━━━━━━━━━━━\n`
+    mensaje += `💰 *TOTAL: ${formatearMoneda(total)}*\n`
+    mensaje += `━━━━━━━━━━━━━━━━━━\n\n`
+    mensaje += `🔖 Pedido #${pedidoId?.slice(0, 8).toUpperCase() || 'NUEVO'}`
+    
+    return encodeURIComponent(mensaje)
+  }
+
+  // Enviar pedido a WhatsApp
   const enviarPedido = async () => {
     if (!datosCliente.nombre.trim()) {
       setError('Ingresa tu nombre')
@@ -54,14 +86,31 @@ export default function PaginaCarrito() {
     setEnviando(true)
     setError('')
 
+    // Crear pedido en la base de datos
     const resultado = await crearPedido(datosCliente, carrito, total)
 
     if (resultado.exito) {
-      setPedidoId(resultado.pedidoId)
+      const idPedido = resultado.pedidoId
+      setPedidoId(idPedido)
+      
+      // Generar mensaje y abrir WhatsApp
+      const mensaje = generarMensajeWhatsApp(idPedido)
+      const urlWhatsApp = `https://wa.me/${WHATSAPP_VENDEDOR}?text=${mensaje}`
+      
+      // Abrir WhatsApp en nueva pestaña
+      window.open(urlWhatsApp, '_blank')
+      
+      // Limpiar carrito y mostrar confirmación
       limpiarCarrito()
       setPaso('confirmacion')
     } else {
-      setError(resultado.error || 'Error al enviar pedido')
+      // Si falla el guardado en BD, igual enviar a WhatsApp
+      const mensaje = generarMensajeWhatsApp('PENDIENTE')
+      const urlWhatsApp = `https://wa.me/${WHATSAPP_VENDEDOR}?text=${mensaje}`
+      window.open(urlWhatsApp, '_blank')
+      
+      limpiarCarrito()
+      setPaso('confirmacion')
     }
 
     setEnviando(false)
@@ -95,6 +144,9 @@ export default function PaginaCarrito() {
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
           ¡Pedido enviado!
         </h2>
+        <p className="text-slate-500 dark:text-slate-400 mb-2">
+          Tu pedido fue enviado por WhatsApp
+        </p>
         <p className="text-slate-500 dark:text-slate-400 mb-6">
           Te contactaremos pronto para confirmar la entrega
         </p>
@@ -172,14 +224,25 @@ export default function PaginaCarrito() {
           </div>
         </div>
 
-        <BotonPrimario
+        {/* Botón de WhatsApp */}
+        <button
           onClick={enviarPedido}
-          cargando={enviando}
-          className="w-full"
-          tamanio="lg"
+          disabled={enviando}
+          className="w-full bg-green-500 hover:bg-green-600 text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-3 transition-colors disabled:opacity-50"
         >
-          Enviar pedido
-        </BotonPrimario>
+          {enviando ? (
+            <span>Enviando...</span>
+          ) : (
+            <>
+              <MessageCircle className="w-6 h-6" />
+              <span>Enviar pedido por WhatsApp</span>
+            </>
+          )}
+        </button>
+        
+        <p className="text-center text-sm text-slate-500 mt-3">
+          Se abrirá WhatsApp con tu pedido listo para enviar
+        </p>
       </div>
     )
   }

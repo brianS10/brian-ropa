@@ -8,7 +8,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Search, ShoppingBag, Plus, Check, Filter, X, ChevronRight, Sparkles } from 'lucide-react'
+import { Search, ShoppingBag, Plus, Check, Filter, X, ChevronRight, Sparkles, ChevronLeft } from 'lucide-react'
 import { supabase, estaConfigurado } from '@/lib/base_datos/cliente_supabase'
 import { usarCarritoCliente } from '@/hooks/usarCarritoCliente'
 import { formatearMoneda, cn } from '@/lib/utilidades'
@@ -30,10 +30,22 @@ export default function PaginaTienda() {
   const [busqueda, setBusqueda] = useState('')
   const [categoriaActiva, setCategoriaActiva] = useState('todos')
   const [productoSeleccionado, setProductoSeleccionado] = useState(null)
+  const [imagenActiva, setImagenActiva] = useState(0)
   const { carrito, agregarProducto, obtenerCantidadItems } = usarCarritoCliente()
   const [agregadoReciente, setAgregadoReciente] = useState(null)
 
   const cantidadCarrito = obtenerCantidadItems()
+
+  // Obtener imágenes del producto (array o imagen_url individual)
+  const obtenerImagenes = (producto) => {
+    if (producto.imagenes && producto.imagenes.length > 0) {
+      return producto.imagenes
+    }
+    if (producto.imagen_url) {
+      return [producto.imagen_url]
+    }
+    return []
+  }
 
   // Cargar productos
   useEffect(() => {
@@ -278,31 +290,86 @@ export default function PaginaTienda() {
         <div className="fixed inset-0 z-50 bg-black/60 flex items-end md:items-center md:justify-center">
           <div 
             className="absolute inset-0" 
-            onClick={() => setProductoSeleccionado(null)} 
+            onClick={() => {
+              setProductoSeleccionado(null)
+              setImagenActiva(0)
+            }} 
           />
           <div className="relative w-full md:w-auto md:min-w-[500px] md:max-w-2xl bg-white dark:bg-slate-800 rounded-t-3xl md:rounded-3xl max-h-[85vh] overflow-auto animate-slide-up md:animate-none md:m-4">
-            {/* Imagen grande */}
-            <div className="relative h-64 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600">
-              {productoSeleccionado.imagen_url ? (
-                <img 
-                  src={productoSeleccionado.imagen_url} 
-                  alt={productoSeleccionado.nombre}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <span className="text-8xl">👖</span>
+            {/* Galería de imágenes */}
+            {(() => {
+              const imagenesProducto = obtenerImagenes(productoSeleccionado)
+              return (
+                <div className="relative h-72 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600">
+                  {imagenesProducto.length > 0 ? (
+                    <>
+                      <img 
+                        src={imagenesProducto[imagenActiva]} 
+                        alt={productoSeleccionado.nombre}
+                        className="w-full h-full object-cover"
+                      />
+                      
+                      {/* Flechas de navegación */}
+                      {imagenesProducto.length > 1 && (
+                        <>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setImagenActiva(prev => prev === 0 ? imagenesProducto.length - 1 : prev - 1)
+                            }}
+                            className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/30 backdrop-blur rounded-full flex items-center justify-center text-white hover:bg-black/50"
+                          >
+                            <ChevronLeft className="w-6 h-6" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setImagenActiva(prev => prev === imagenesProducto.length - 1 ? 0 : prev + 1)
+                            }}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/30 backdrop-blur rounded-full flex items-center justify-center text-white hover:bg-black/50"
+                          >
+                            <ChevronRight className="w-6 h-6" />
+                          </button>
+                          
+                          {/* Indicadores */}
+                          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                            {imagenesProducto.map((_, idx) => (
+                              <button
+                                key={idx}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setImagenActiva(idx)
+                                }}
+                                className={`w-2 h-2 rounded-full transition-all ${
+                                  idx === imagenActiva 
+                                    ? 'bg-white w-4' 
+                                    : 'bg-white/50'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <span className="text-8xl">👖</span>
+                    </div>
+                  )}
+                  
+                  {/* Cerrar */}
+                  <button
+                    onClick={() => {
+                      setProductoSeleccionado(null)
+                      setImagenActiva(0)
+                    }}
+                    className="absolute top-4 right-4 w-10 h-10 bg-black/30 backdrop-blur rounded-full flex items-center justify-center text-white"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
                 </div>
-              )}
-              
-              {/* Cerrar */}
-              <button
-                onClick={() => setProductoSeleccionado(null)}
-                className="absolute top-4 right-4 w-10 h-10 bg-black/30 backdrop-blur rounded-full flex items-center justify-center text-white"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
+              )
+            })()}
 
             {/* Detalles */}
             <div className="p-6">
@@ -402,7 +469,7 @@ export default function PaginaTienda() {
 
       {/* Botón flotante de WhatsApp */}
       <a
-        href="https://wa.me/521234567890?text=Hola!%20Me%20interesa%20un%20producto"
+        href="https://wa.me/5215582258230?text=Hola!%20Me%20interesa%20un%20producto"
         target="_blank"
         rel="noopener noreferrer"
         className={`fixed z-50 w-14 h-14 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg shadow-green-500/30 flex items-center justify-center transition-all hover:scale-110 ${

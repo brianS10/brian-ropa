@@ -18,7 +18,7 @@ export default function LayoutRaiz({ children }) {
   return (
     <html lang="es">
       <head>
-        <link rel="apple-touch-icon" href="/icono-192.png" />
+        <link rel="apple-touch-icon" href="/icono-192.svg" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
       </head>
       <body className="antialiased">
