@@ -352,7 +352,7 @@ export default function PaginaEditarStock() {
                   }`}
                 >
                   <div className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    {variante.talla} · {variante.color}
+                    {variante.talla}{variante.color && variante.color !== 'Sin especificar' ? ` · ${variante.color}` : ''}
                   </div>
                   <div className="flex gap-3">
                     <div className="flex-1">
@@ -440,9 +440,11 @@ export default function PaginaEditarStock() {
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <span className="font-semibold text-slate-900 dark:text-white">
-                    Talla {variante.talla}
+                    {variante.talla}
                   </span>
-                  <span className="text-slate-500 ml-2">· {variante.color}</span>
+                  {variante.color && variante.color !== 'Sin especificar' && (
+                    <span className="text-slate-500 ml-2">· {variante.color}</span>
+                  )}
                 </div>
                 <span className="text-sm text-slate-500">
                   {formatearMoneda(variante.precio_venta)}

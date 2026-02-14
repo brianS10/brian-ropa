@@ -17,6 +17,9 @@ import {
 } from 'lucide-react'
 import { supabase, estaConfigurado } from '@/lib/base_datos/cliente_supabase'
 import { formatearMoneda, cn } from '@/lib/utilidades'
+import Confeti from '@/componentes/Confeti'
+import ToggleTema from '@/componentes/ToggleTema'
+import { SkeletonProductoGrande } from '@/componentes/Skeletons'
 
 const TIPOS_FILTRO = [
   { valor: 'todos', etiqueta: 'Todo', emoji: '🛒' },
@@ -35,6 +38,7 @@ export default function PaginaVentaRapida() {
   const [cantidadVenta, setCantidadVenta] = useState(1)
   const [procesando, setProcesando] = useState(false)
   const [ventaExitosa, setVentaExitosa] = useState(false)
+  const [mostrarConfeti, setMostrarConfeti] = useState(false)
   const [ventasHoy, setVentasHoy] = useState({ cantidad: 0, total: 0 })
   const [stockEditando, setStockEditando] = useState({})
   const [guardandoStock, setGuardandoStock] = useState(null)
@@ -159,13 +163,15 @@ export default function PaginaVentaRapida() {
         })
 
       setVentaExitosa(true)
+      setMostrarConfeti(true)
       setTimeout(() => {
         setVentaExitosa(false)
+        setMostrarConfeti(false)
         setVarianteSeleccionada(null)
         setCantidadVenta(1)
         cargarProductos()
         cargarVentasHoy()
-      }, 1200)
+      }, 1500)
 
     } catch (error) {
       alert('Error: ' + error.message)
@@ -187,6 +193,9 @@ export default function PaginaVentaRapida() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+      {/* Confeti de celebración */}
+      <Confeti activo={mostrarConfeti} />
+
       {/* Header fijo */}
       <header className="sticky top-0 z-40 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm">
         <div className="p-3">
@@ -204,12 +213,17 @@ export default function PaginaVentaRapida() {
               </div>
             </div>
             
-            {/* Ventas de hoy - compacto */}
-            <div className="bg-green-50 dark:bg-green-900/30 px-3 py-1.5 rounded-xl text-right flex-shrink-0">
-              <p className="text-base font-black text-green-600 leading-tight">
-                {formatearMoneda(ventasHoy.total)}
-              </p>
-              <p className="text-[10px] text-green-600/70">{ventasHoy.cantidad} ventas hoy</p>
+            <div className="flex items-center gap-2">
+              {/* Toggle tema */}
+              <ToggleTema />
+              
+              {/* Ventas de hoy - compacto */}
+              <div className="bg-green-50 dark:bg-green-900/30 px-3 py-1.5 rounded-xl text-right flex-shrink-0">
+                <p className="text-base font-black text-green-600 leading-tight">
+                  {formatearMoneda(ventasHoy.total)}
+                </p>
+                <p className="text-[10px] text-green-600/70">{ventasHoy.cantidad} ventas hoy</p>
+              </div>
             </div>
           </div>
 
@@ -273,8 +287,8 @@ export default function PaginaVentaRapida() {
       <main className="p-3 pb-24 space-y-3">
         {cargando ? (
           <div className="space-y-3">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="animate-pulse bg-white dark:bg-slate-800 rounded-2xl h-32" />
+            {[1, 2, 3, 4].map(i => (
+              <SkeletonProductoGrande key={i} />
             ))}
           </div>
         ) : productosFiltrados.length === 0 ? (

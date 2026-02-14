@@ -17,6 +17,8 @@ import { useEffect, useState } from 'react'
 import { Search, X, MessageCircle, Share2 } from 'lucide-react'
 import { supabase, estaConfigurado } from '@/lib/base_datos/cliente_supabase'
 import { formatearMoneda, cn } from '@/lib/utilidades'
+import ToggleTema from '@/componentes/ToggleTema'
+import { SkeletonLista } from '@/componentes/Skeletons'
 
 // Número de WhatsApp del vendedor
 const WHATSAPP_VENDEDOR = '5215582258230'
@@ -148,12 +150,19 @@ export default function PaginaCatalogo() {
     const precioBase = variante?.precio_venta || obtenerPrecioMinimo(producto.variantes_producto)
     const descuento = producto.descuento || 0
     const precioFinal = descuento > 0 ? precioBase * (1 - descuento / 100) : precioBase
+    const esRopa = (producto.tipo_producto || 'ropa') === 'ropa'
     
     let mensaje = `¡Hola! 👋\n\nMe interesa este producto:\n\n`
     mensaje += `📦 *${producto.nombre}*\n`
     if (variante) {
-      mensaje += `📏 Talla: ${variante.talla}\n`
-      mensaje += `🎨 Color: ${variante.color}\n`
+      if (esRopa) {
+        mensaje += `📏 Talla: ${variante.talla}\n`
+        if (variante.color && variante.color !== 'Sin especificar') {
+          mensaje += `🎨 Color: ${variante.color}\n`
+        }
+      } else {
+        mensaje += `📏 ${variante.talla}\n`
+      }
     }
     if (descuento > 0) {
       mensaje += `🏷️ *OFERTA -${descuento}%*\n`
@@ -213,12 +222,15 @@ export default function PaginaCatalogo() {
               </div>
             </div>
             
-            <button
-              onClick={compartirCatalogo}
-              className="w-11 h-11 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-200 transition-colors"
-            >
-              <Share2 className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-            </button>
+            <div className="flex items-center gap-2">
+              <ToggleTema />
+              <button
+                onClick={compartirCatalogo}
+                className="w-11 h-11 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+              >
+                <Share2 className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+              </button>
+            </div>
           </div>
 
           {/* Buscador */}
@@ -294,15 +306,7 @@ export default function PaginaCatalogo() {
 
         {/* Grid de productos */}
         {cargando ? (
-          <div className="grid grid-cols-3 gap-2">
-            {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} className="animate-pulse">
-                <div className="bg-slate-200 dark:bg-slate-700 rounded-2xl aspect-square mb-2" />
-                <div className="bg-slate-200 dark:bg-slate-700 rounded h-3 w-3/4 mb-1" />
-                <div className="bg-slate-200 dark:bg-slate-700 rounded h-4 w-1/2" />
-              </div>
-            ))}
-          </div>
+          <SkeletonLista cantidad={9} tipo="grid" />
         ) : productosFiltrados.length === 0 ? (
           <div className="text-center py-20">
             <div className="text-7xl mb-4">🔍</div>
@@ -544,7 +548,7 @@ export default function PaginaCatalogo() {
                     {tallasConStock.length > 0 && (
                       <div className="mb-4">
                         <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                          {esRopa ? 'Selecciona talla:' : 'Opciones:'}
+                          {esRopa ? 'Selecciona talla:' : productoSeleccionado.tipo_producto === 'perfumes' ? 'Tamaño:' : 'Opciones:'}
                         </p>
                         <div className="flex flex-wrap gap-2">
                           {tallasConStock.map(variante => (
@@ -559,7 +563,7 @@ export default function PaginaCatalogo() {
                               )}
                             >
                               {variante.talla}
-                              {esRopa && variante.color !== 'Sin especificar' && (
+                              {esRopa && variante.color && variante.color !== 'Sin especificar' && (
                                 <span className="block text-xs opacity-70">{variante.color}</span>
                               )}
                             </button>

@@ -16,13 +16,33 @@ export const viewport = {
 
 export default function LayoutRaiz({ children }) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <head>
         <link rel="apple-touch-icon" href="/icono-192.svg" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var tema = localStorage.getItem('tema');
+                  if (tema === 'oscuro') {
+                    document.documentElement.classList.add('dark');
+                  } else if (tema === 'claro') {
+                    document.documentElement.classList.add('light');
+                  } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.classList.add('dark');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
       </head>
       <body className="antialiased">
-        {children}
+        <main className="page-transition">
+          {children}
+        </main>
       </body>
     </html>
   );

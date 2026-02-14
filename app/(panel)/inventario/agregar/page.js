@@ -41,9 +41,9 @@ export default function PaginaAgregarProducto() {
   const obtenerVarianteDefault = (tipo) => {
     switch(tipo) {
       case 'perfumes':
-        return { talla: '100ml', color: 'Sin especificar', precio_venta: '', precio_costo: '', stock_actual: '' }
+        return { talla: '100ml', color: '', precio_venta: '', precio_costo: '', stock_actual: '' }
       case 'juguetes':
-        return { talla: 'Todas las edades', color: 'Sin especificar', precio_venta: '', precio_costo: '', stock_actual: '' }
+        return { talla: 'Todas las edades', color: '', precio_venta: '', precio_costo: '', stock_actual: '' }
       default:
         return { talla: '30', color: 'Negro', precio_venta: '', precio_costo: '', stock_actual: '' }
     }
