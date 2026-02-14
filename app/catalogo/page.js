@@ -343,20 +343,23 @@ export default function PaginaCatalogo() {
                     setTallaSeleccionada(null)
                   }}
                   className={cn(
-                    "group cursor-pointer transition-all active:scale-95",
+                    "group cursor-pointer transition-all duration-300 animate-scale-in",
+                    "hover:scale-[1.02] active:scale-95",
                     agotado && "opacity-50 grayscale"
                   )}
+                  style={{ animationDelay: `${Math.random() * 0.2}s` }}
                 >
                   {/* Imagen cuadrada compacta */}
                   <div className={cn(
-                    "relative aspect-square bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 rounded-2xl overflow-hidden mb-1.5 shadow-sm",
-                    descuento > 0 && !agotado && "ring-2 ring-red-500 ring-offset-1"
+                    "relative aspect-square bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 rounded-2xl overflow-hidden mb-1.5 shadow-sm transition-all duration-300",
+                    "group-hover:shadow-lg group-hover:shadow-slate-500/20",
+                    descuento > 0 && !agotado && "ring-2 ring-red-500 ring-offset-1 ring-offset-white dark:ring-offset-slate-900"
                   )}>
                     {imagenes.length > 0 ? (
                       <img 
                         src={imagenes[0]} 
                         alt={producto.nombre}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
@@ -377,24 +380,24 @@ export default function PaginaCatalogo() {
                         Agotado
                       </span>
                     ) : stockTotal <= 3 && stockTotal > 0 ? (
-                      <span className="absolute top-1 left-1 px-1.5 py-0.5 bg-orange-500/90 text-white text-[10px] font-bold rounded-full">
-                        ¡{stockTotal}!
+                      <span className="absolute top-1 left-1 px-1.5 py-0.5 bg-orange-500/90 text-white text-[10px] font-bold rounded-full animate-pulse">
+                        ¡Últimos {stockTotal}!
                       </span>
                     ) : null}
 
                     {/* Precio sobre la imagen */}
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-1.5">
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-1.5 pt-6">
                       {descuento > 0 ? (
                         <div>
-                          <p className="text-white/70 text-[10px] line-through leading-none">
+                          <p className="text-white/60 text-[10px] line-through leading-none">
                             {formatearMoneda(precioMinimo)}
                           </p>
-                          <p className="text-green-400 font-black text-sm leading-none">
+                          <p className="text-green-400 font-black text-sm leading-none drop-shadow-lg">
                             {formatearMoneda(precioConDescuento)}
                           </p>
                         </div>
                       ) : (
-                        <p className="text-white font-black text-sm leading-none">
+                        <p className="text-white font-black text-sm leading-none drop-shadow-lg">
                           {formatearMoneda(precioMinimo)}
                         </p>
                       )}
@@ -404,8 +407,8 @@ export default function PaginaCatalogo() {
                   {/* Info compacta */}
                   <div className="px-0.5">
                     <h3 className={cn(
-                      "font-semibold text-xs leading-tight line-clamp-2",
-                      agotado ? "text-slate-400" : "text-slate-900 dark:text-white"
+                      "font-semibold text-xs leading-tight line-clamp-2 transition-colors",
+                      agotado ? "text-slate-400" : "text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400"
                     )}>
                       {producto.nombre}
                     </h3>

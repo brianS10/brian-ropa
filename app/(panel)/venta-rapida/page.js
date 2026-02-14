@@ -18,7 +18,6 @@ import {
 import { supabase, estaConfigurado } from '@/lib/base_datos/cliente_supabase'
 import { formatearMoneda, cn } from '@/lib/utilidades'
 import Confeti from '@/componentes/Confeti'
-import ToggleTema from '@/componentes/ToggleTema'
 import { SkeletonProductoGrande } from '@/componentes/Skeletons'
 
 const TIPOS_FILTRO = [
@@ -214,9 +213,6 @@ export default function PaginaVentaRapida() {
             </div>
             
             <div className="flex items-center gap-2">
-              {/* Toggle tema */}
-              <ToggleTema />
-              
               {/* Ventas de hoy - compacto */}
               <div className="bg-green-50 dark:bg-green-900/30 px-3 py-1.5 rounded-xl text-right flex-shrink-0">
                 <p className="text-base font-black text-green-600 leading-tight">
