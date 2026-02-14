@@ -145,13 +145,22 @@ export default function PaginaCatalogo() {
 
   // Enviar mensaje por WhatsApp
   const pedirPorWhatsApp = (producto, variante = null) => {
+    const precioBase = variante?.precio_venta || obtenerPrecioMinimo(producto.variantes_producto)
+    const descuento = producto.descuento || 0
+    const precioFinal = descuento > 0 ? precioBase * (1 - descuento / 100) : precioBase
+    
     let mensaje = `¡Hola! 👋\n\nMe interesa este producto:\n\n`
     mensaje += `📦 *${producto.nombre}*\n`
     if (variante) {
       mensaje += `📏 Talla: ${variante.talla}\n`
       mensaje += `🎨 Color: ${variante.color}\n`
     }
-    mensaje += `💰 Precio: ${formatearMoneda(variante?.precio_venta || obtenerPrecioMinimo(producto.variantes_producto))}\n\n`
+    if (descuento > 0) {
+      mensaje += `🏷️ *OFERTA -${descuento}%*\n`
+      mensaje += `💰 Precio: ~${formatearMoneda(precioBase)}~ → *${formatearMoneda(precioFinal)}*\n\n`
+    } else {
+      mensaje += `💰 Precio: ${formatearMoneda(precioBase)}\n\n`
+    }
     mensaje += `¿Está disponible? 🙏`
     
     const url = `https://wa.me/${WHATSAPP_VENDEDOR}?text=${encodeURIComponent(mensaje)}`
@@ -319,6 +328,8 @@ export default function PaginaCatalogo() {
               const imagenes = obtenerImagenes(producto)
               const stockTotal = producto.variantes_producto?.reduce((acc, v) => acc + v.stock_actual, 0) || 0
               const agotado = stockTotal === 0
+              const descuento = producto.descuento || 0
+              const precioConDescuento = descuento > 0 ? precioMinimo * (1 - descuento / 100) : precioMinimo
 
               return (
                 <div
@@ -333,7 +344,10 @@ export default function PaginaCatalogo() {
                   )}
                 >
                   {/* Imagen cuadrada compacta */}
-                  <div className="relative aspect-square bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 rounded-2xl overflow-hidden mb-1.5 shadow-sm">
+                  <div className={cn(
+                    "relative aspect-square bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 rounded-2xl overflow-hidden mb-1.5 shadow-sm",
+                    descuento > 0 && !agotado && "ring-2 ring-red-500 ring-offset-1"
+                  )}>
                     {imagenes.length > 0 ? (
                       <img 
                         src={imagenes[0]} 
@@ -349,8 +363,12 @@ export default function PaginaCatalogo() {
                       </div>
                     )}
                     
-                    {/* Badge de estado */}
-                    {agotado ? (
+                    {/* Badge de descuento o estado */}
+                    {descuento > 0 && !agotado ? (
+                      <span className="absolute top-1 left-1 px-2 py-0.5 bg-gradient-to-r from-red-500 to-orange-500 text-white text-[10px] font-black rounded-full shadow-lg animate-pulse">
+                        -{descuento}% 🔥
+                      </span>
+                    ) : agotado ? (
                       <span className="absolute top-1 left-1 px-1.5 py-0.5 bg-slate-500/90 text-white text-[10px] font-bold rounded-full">
                         Agotado
                       </span>
@@ -362,9 +380,20 @@ export default function PaginaCatalogo() {
 
                     {/* Precio sobre la imagen */}
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-1.5">
-                      <p className="text-white font-black text-sm leading-none">
-                        {formatearMoneda(precioMinimo)}
-                      </p>
+                      {descuento > 0 ? (
+                        <div>
+                          <p className="text-white/70 text-[10px] line-through leading-none">
+                            {formatearMoneda(precioMinimo)}
+                          </p>
+                          <p className="text-green-400 font-black text-sm leading-none">
+                            {formatearMoneda(precioConDescuento)}
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="text-white font-black text-sm leading-none">
+                          {formatearMoneda(precioMinimo)}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -441,9 +470,32 @@ export default function PaginaCatalogo() {
                   <h2 className="font-bold text-slate-900 dark:text-white text-base leading-tight line-clamp-2">
                     {productoSeleccionado.nombre}
                   </h2>
-                  <p className="text-xl font-black text-green-600">
-                    {formatearMoneda(tallaSeleccionada?.precio_venta || obtenerPrecioMinimo(productoSeleccionado.variantes_producto))}
-                  </p>
+                  {/* Precio con descuento */}
+                  {(() => {
+                    const precioBase = tallaSeleccionada?.precio_venta || obtenerPrecioMinimo(productoSeleccionado.variantes_producto)
+                    const descuento = productoSeleccionado.descuento || 0
+                    const precioFinal = descuento > 0 ? precioBase * (1 - descuento / 100) : precioBase
+                    
+                    return descuento > 0 ? (
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                            -{descuento}%
+                          </span>
+                          <span className="text-sm text-slate-400 line-through">
+                            {formatearMoneda(precioBase)}
+                          </span>
+                        </div>
+                        <p className="text-xl font-black text-green-600">
+                          {formatearMoneda(precioFinal)}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-xl font-black text-green-600">
+                        {formatearMoneda(precioBase)}
+                      </p>
+                    )
+                  })()}
                   {obtenerImagenes(productoSeleccionado).length > 1 && (
                     <p className="text-xs text-blue-500 mt-0.5">
                       📷 Toca la foto para ver más

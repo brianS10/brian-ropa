@@ -123,7 +123,7 @@ export default function PaginaEditarStock() {
         if (error) throw error
       }
 
-      // Actualizar producto (nombre, categoría, descripción, imágenes)
+      // Actualizar producto (nombre, categoría, descripción, imágenes, descuento)
       const { error: errorProducto } = await supabase
         .from('productos')
         .update({ 
@@ -131,6 +131,7 @@ export default function PaginaEditarStock() {
           descripcion: producto.descripcion,
           categoria: producto.categoria,
           tipo_producto: producto.tipo_producto,
+          descuento: producto.descuento || null,
           imagenes: imagenes,
           imagen_url: imagenes[0] || null
         })
@@ -252,8 +253,11 @@ export default function PaginaEditarStock() {
             <select
               value={producto.tipo_producto || 'ropa'}
               onChange={(e) => {
-                actualizarProducto('tipo_producto', e.target.value)
-                actualizarProducto('categoria', CATEGORIAS_POR_TIPO[e.target.value]?.[0] || 'General')
+                const nuevoTipo = e.target.value
+                actualizarProducto('tipo_producto', nuevoTipo)
+                const categorias = CATEGORIAS_POR_TIPO[nuevoTipo] || CATEGORIAS_POR_TIPO.ropa
+                const primeraCategoria = categorias.find(c => c.valor !== 'todos')?.valor || 'General'
+                actualizarProducto('categoria', primeraCategoria)
               }}
               className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
             >
@@ -273,10 +277,49 @@ export default function PaginaEditarStock() {
               onChange={(e) => actualizarProducto('categoria', e.target.value)}
               className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
             >
-              {(CATEGORIAS_POR_TIPO[producto.tipo_producto || 'ropa'] || CATEGORIAS_POR_TIPO.ropa).map((cat) => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
+              {(CATEGORIAS_POR_TIPO[producto.tipo_producto || 'ropa'] || CATEGORIAS_POR_TIPO.ropa)
+                .filter(cat => cat.valor !== 'todos')
+                .map((cat) => (
+                  <option key={cat.valor} value={cat.valor}>{cat.etiqueta}</option>
+                ))}
             </select>
+          </div>
+
+          {/* Descuento */}
+          <div className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
+            <label className="block text-sm font-medium text-red-700 dark:text-red-400 mb-2">
+              🏷️ Descuento / Promoción
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="number"
+                min="0"
+                max="99"
+                value={producto.descuento || ''}
+                onChange={(e) => {
+                  const valor = Math.min(99, Math.max(0, parseInt(e.target.value) || 0))
+                  actualizarProducto('descuento', valor || null)
+                }}
+                className="w-24 px-4 py-3 rounded-xl border border-red-300 dark:border-red-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-center text-xl font-bold"
+                placeholder="0"
+              />
+              <span className="text-2xl font-bold text-red-600">%</span>
+              <div className="flex-1 text-sm text-red-600 dark:text-red-400">
+                {producto.descuento > 0 ? (
+                  <span className="font-medium">✨ Se mostrará en el catálogo como OFERTA</span>
+                ) : (
+                  <span className="text-slate-500">Sin descuento activo</span>
+                )}
+              </div>
+            </div>
+            {producto.descuento > 0 && (
+              <button
+                onClick={() => actualizarProducto('descuento', null)}
+                className="mt-3 w-full py-2 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition-colors"
+              >
+                ❌ Quitar descuento
+              </button>
+            )}
           </div>
 
           {/* Descripción */}
