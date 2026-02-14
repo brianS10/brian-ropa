@@ -198,27 +198,28 @@ export default function PaginaCatalogo() {
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-b border-slate-200 dark:border-slate-700 shadow-sm">
         <div className="p-4">
-          {/* Logo y título */}
-          <div className="flex items-center justify-between mb-4">
+          {/* Logo y título - Animado */}
+          <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
               <div className={cn(
-                'w-12 h-12 bg-gradient-to-br rounded-2xl flex items-center justify-center shadow-lg',
+                'w-14 h-14 bg-gradient-to-br rounded-2xl flex items-center justify-center shadow-lg animate-float',
                 tipoActivo === 'ropa' ? 'from-blue-500 to-cyan-500 shadow-blue-500/30' :
                 tipoActivo === 'perfumes' ? 'from-pink-500 to-rose-500 shadow-pink-500/30' :
                 tipoActivo === 'juguetes' ? 'from-yellow-500 to-orange-500 shadow-yellow-500/30' :
                 'from-purple-500 to-blue-500 shadow-purple-500/30'
               )}>
-                <span className="text-2xl">
+                <span className="text-3xl">
                   {tipoActivo === 'ropa' ? '👖' : 
                    tipoActivo === 'perfumes' ? '🧴' : 
                    tipoActivo === 'juguetes' ? '🧸' : '🛒'}
                 </span>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+                <h1 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
                   {NOMBRE_TIENDA}
+                  <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                 </h1>
-                <p className="text-xs text-slate-500">Catálogo actualizado</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">✨ Catálogo actualizado</p>
               </div>
             </div>
             
@@ -226,27 +227,27 @@ export default function PaginaCatalogo() {
               <ToggleTema />
               <button
                 onClick={compartirCatalogo}
-                className="w-11 h-11 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                className="w-11 h-11 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center active:scale-90 transition-transform tap-feedback"
               >
                 <Share2 className="w-5 h-5 text-slate-600 dark:text-slate-400" />
               </button>
             </div>
           </div>
 
-          {/* Buscador */}
-          <div className="relative">
+          {/* Buscador mejorado */}
+          <div className="relative mb-4">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <input
               type="text"
-              placeholder="Buscar productos..."
+              placeholder="¿Qué estás buscando? 🔍"
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              className="w-full pl-12 pr-4 py-3.5 bg-slate-100 dark:bg-slate-800 rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+              className="w-full pl-12 pr-4 py-4 bg-slate-100 dark:bg-slate-800 rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base border-2 border-transparent focus:border-blue-500/30 transition-all"
             />
             {busqueda && (
               <button
                 onClick={() => setBusqueda('')}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 active:scale-90 transition-transform"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -256,16 +257,17 @@ export default function PaginaCatalogo() {
 
         {/* Tipos de producto */}
         <div className="flex gap-2 px-4 pb-3 overflow-x-auto no-scrollbar">
-          {TIPOS_PRODUCTO.map(tipo => (
+          {TIPOS_PRODUCTO.map((tipo, idx) => (
             <button
               key={tipo.valor}
               onClick={() => cambiarTipo(tipo.valor)}
               className={cn(
-                'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all border-2',
+                'flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-bold whitespace-nowrap transition-all border-2 tap-feedback',
                 tipoActivo === tipo.valor
-                  ? `bg-gradient-to-r ${tipo.color} text-white border-transparent shadow-lg`
-                  : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300'
+                  ? `bg-gradient-to-r ${tipo.color} text-white border-transparent shadow-lg scale-105`
+                  : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 active:scale-95'
               )}
+              style={{ animationDelay: `${idx * 0.05}s` }}
             >
               <span className="text-lg">{tipo.emoji}</span>
               <span>{tipo.etiqueta}</span>
@@ -273,19 +275,20 @@ export default function PaginaCatalogo() {
           ))}
         </div>
 
-        {/* Categorías (solo si no es "todos") */}
+        {/* Categorías (solo si no es "todos") - Mejorado */}
         {tipoActivo !== 'todos' && CATEGORIAS_POR_TIPO[tipoActivo] && (
           <div className="flex gap-2 px-4 pb-4 overflow-x-auto no-scrollbar">
-            {CATEGORIAS_POR_TIPO[tipoActivo].map(cat => (
+            {CATEGORIAS_POR_TIPO[tipoActivo].map((cat, idx) => (
               <button
                 key={cat.valor}
                 onClick={() => setCategoriaActiva(cat.valor)}
                 className={cn(
-                  'flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all',
+                  'flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all tap-feedback',
                   categoriaActiva === cat.valor
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/30'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/30 scale-105'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 active:scale-95'
                 )}
+                style={{ animationDelay: `${idx * 0.03}s` }}
               >
                 <span>{cat.emoji}</span>
                 <span>{cat.etiqueta}</span>
@@ -297,10 +300,12 @@ export default function PaginaCatalogo() {
 
       {/* Contenido */}
       <main className="p-4 pb-28">
-        {/* Contador */}
+        {/* Contador con animación */}
         <div className="flex items-center justify-between mb-4">
-          <p className="text-sm text-slate-500 font-medium">
-            {productosFiltrados.length} producto{productosFiltrados.length !== 1 && 's'} disponible{productosFiltrados.length !== 1 && 's'}
+          <p className="text-sm text-slate-500 dark:text-slate-400 font-medium flex items-center gap-2">
+            <span className="inline-block w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500"></span>
+            <span className="font-bold text-slate-700 dark:text-slate-200">{productosFiltrados.length}</span>
+            producto{productosFiltrados.length !== 1 && 's'} disponible{productosFiltrados.length !== 1 && 's'}
           </p>
         </div>
 
@@ -308,8 +313,8 @@ export default function PaginaCatalogo() {
         {cargando ? (
           <SkeletonLista cantidad={9} tipo="grid" />
         ) : productosFiltrados.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="text-7xl mb-4">🔍</div>
+          <div className="text-center py-20 animate-scale-in">
+            <div className="text-7xl mb-4 animate-float">🔍</div>
             <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
               No hay productos
             </h3>
@@ -318,15 +323,15 @@ export default function PaginaCatalogo() {
             </p>
             <a
               href={`https://wa.me/${WHATSAPP_VENDEDOR}?text=Hola!%20¿Qué%20productos%20tienen%20disponibles?`}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-green-500 text-white rounded-full font-semibold hover:bg-green-600 transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full font-semibold shadow-lg shadow-green-500/30 tap-feedback"
             >
               <MessageCircle className="w-5 h-5" />
               Preguntar disponibilidad
             </a>
           </div>
         ) : (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3">
-            {productosFiltrados.map(producto => {
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            {productosFiltrados.map((producto, index) => {
               const precioMinimo = obtenerPrecioMinimo(producto.variantes_producto)
               const tallasDisponibles = obtenerTallasDisponibles(producto.variantes_producto)
               const imagenes = obtenerImagenes(producto)
@@ -343,81 +348,107 @@ export default function PaginaCatalogo() {
                     setTallaSeleccionada(null)
                   }}
                   className={cn(
-                    "group cursor-pointer transition-all duration-300 animate-scale-in",
-                    "hover:scale-[1.02] active:scale-95",
+                    "group cursor-pointer animate-stagger tap-feedback",
                     agotado && "opacity-50 grayscale"
                   )}
-                  style={{ animationDelay: `${Math.random() * 0.2}s` }}
+                  style={{ animationDelay: `${index * 0.05}s` }}
                 >
-                  {/* Imagen cuadrada compacta */}
+                  {/* Tarjeta del producto */}
                   <div className={cn(
-                    "relative aspect-square bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 rounded-2xl overflow-hidden mb-1.5 shadow-sm transition-all duration-300",
-                    "group-hover:shadow-lg group-hover:shadow-slate-500/20",
-                    descuento > 0 && !agotado && "ring-2 ring-red-500 ring-offset-1 ring-offset-white dark:ring-offset-slate-900"
+                    "relative aspect-[3/4] rounded-2xl overflow-hidden shadow-md transition-all duration-300",
+                    "bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600",
+                    "group-active:scale-95",
+                    descuento > 0 && !agotado && "ring-2 ring-red-500 animate-glow"
                   )}>
+                    {/* Imagen */}
                     {imagenes.length > 0 ? (
                       <img 
                         src={imagenes[0]} 
                         alt={producto.nombre}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-3xl">
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-600 dark:to-slate-700">
+                        <span className="text-4xl">
                           {(producto.tipo_producto || 'ropa') === 'ropa' ? '👖' : 
                            producto.tipo_producto === 'perfumes' ? '🧴' : '🧸'}
                         </span>
                       </div>
                     )}
                     
+                    {/* Overlay con gradiente */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                    
                     {/* Badge de descuento o estado */}
                     {descuento > 0 && !agotado ? (
-                      <span className="absolute top-1 left-1 px-2 py-0.5 bg-gradient-to-r from-red-500 to-orange-500 text-white text-[10px] font-black rounded-full shadow-lg animate-pulse">
-                        -{descuento}% 🔥
-                      </span>
+                      <div className="absolute top-2 left-2 animate-float">
+                        <span className="px-2.5 py-1 bg-gradient-to-r from-red-500 to-orange-500 text-white text-xs font-black rounded-full shadow-lg flex items-center gap-1">
+                          <span className="animate-pulse">🔥</span> -{descuento}%
+                        </span>
+                      </div>
                     ) : agotado ? (
-                      <span className="absolute top-1 left-1 px-1.5 py-0.5 bg-slate-500/90 text-white text-[10px] font-bold rounded-full">
-                        Agotado
-                      </span>
+                      <div className="absolute top-2 left-2">
+                        <span className="px-2 py-1 bg-slate-800/90 text-white text-xs font-bold rounded-full">
+                          Agotado
+                        </span>
+                      </div>
                     ) : stockTotal <= 3 && stockTotal > 0 ? (
-                      <span className="absolute top-1 left-1 px-1.5 py-0.5 bg-orange-500/90 text-white text-[10px] font-bold rounded-full animate-pulse">
-                        ¡Últimos {stockTotal}!
-                      </span>
+                      <div className="absolute top-2 left-2 animate-heartbeat">
+                        <span className="px-2 py-1 bg-orange-500 text-white text-xs font-bold rounded-full shadow-lg">
+                          ¡Últimos {stockTotal}!
+                        </span>
+                      </div>
                     ) : null}
 
-                    {/* Precio sobre la imagen */}
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-1.5 pt-6">
-                      {descuento > 0 ? (
-                        <div>
-                          <p className="text-white/60 text-[10px] line-through leading-none">
+                    {/* Cantidad de fotos */}
+                    {imagenes.length > 1 && (
+                      <div className="absolute top-2 right-2">
+                        <span className="px-2 py-1 bg-black/60 text-white text-xs font-medium rounded-full backdrop-blur-sm">
+                          📷 {imagenes.length}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Info del producto */}
+                    <div className="absolute bottom-0 left-0 right-0 p-3">
+                      <h3 className="font-bold text-white text-sm leading-tight line-clamp-2 mb-1 drop-shadow-lg">
+                        {producto.nombre}
+                      </h3>
+                      
+                      {/* Precio */}
+                      <div className="flex items-end gap-2">
+                        {descuento > 0 ? (
+                          <>
+                            <span className="text-white/50 text-xs line-through">
+                              {formatearMoneda(precioMinimo)}
+                            </span>
+                            <span className="text-green-400 font-black text-lg drop-shadow-lg">
+                              {formatearMoneda(precioConDescuento)}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-white font-black text-lg drop-shadow-lg">
                             {formatearMoneda(precioMinimo)}
-                          </p>
-                          <p className="text-green-400 font-black text-sm leading-none drop-shadow-lg">
-                            {formatearMoneda(precioConDescuento)}
-                          </p>
+                          </span>
+                        )}
+                      </div>
+                      
+                      {/* Tallas disponibles */}
+                      {!agotado && tallasDisponibles.length > 0 && (producto.tipo_producto || 'ropa') === 'ropa' && (
+                        <div className="flex gap-1 mt-2 flex-wrap">
+                          {[...new Set(tallasDisponibles.map(v => v.talla))].slice(0, 4).map(talla => (
+                            <span key={talla} className="px-1.5 py-0.5 bg-white/20 backdrop-blur-sm text-white text-[10px] font-medium rounded">
+                              {talla}
+                            </span>
+                          ))}
+                          {[...new Set(tallasDisponibles.map(v => v.talla))].length > 4 && (
+                            <span className="px-1.5 py-0.5 bg-white/20 backdrop-blur-sm text-white text-[10px] font-medium rounded">
+                              +{[...new Set(tallasDisponibles.map(v => v.talla))].length - 4}
+                            </span>
+                          )}
                         </div>
-                      ) : (
-                        <p className="text-white font-black text-sm leading-none drop-shadow-lg">
-                          {formatearMoneda(precioMinimo)}
-                        </p>
                       )}
                     </div>
-                  </div>
-
-                  {/* Info compacta */}
-                  <div className="px-0.5">
-                    <h3 className={cn(
-                      "font-semibold text-xs leading-tight line-clamp-2 transition-colors",
-                      agotado ? "text-slate-400" : "text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400"
-                    )}>
-                      {producto.nombre}
-                    </h3>
-                    {/* Tallas disponibles - muy compacto */}
-                    {!agotado && tallasDisponibles.length > 0 && (producto.tipo_producto || 'ropa') === 'ropa' && (
-                      <p className="text-[10px] text-slate-500 mt-0.5 truncate">
-                        {[...new Set(tallasDisponibles.map(v => v.talla))].slice(0, 5).join(' · ')}
-                      </p>
-                    )}
                   </div>
                 </div>
               )
@@ -426,102 +457,110 @@ export default function PaginaCatalogo() {
         )}
       </main>
 
-      {/* Modal de producto - Simplificado */}
+      {/* Modal de producto - Mejorado para móvil */}
       {productoSeleccionado && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-end">
+        <div className="fixed inset-0 z-50 flex items-end animate-fade-in">
+          {/* Overlay con blur */}
           <div 
-            className="absolute inset-0" 
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm" 
             onClick={() => setProductoSeleccionado(null)} 
           />
-          <div className="relative w-full bg-white dark:bg-slate-800 rounded-t-[2rem] max-h-[85vh] overflow-auto animate-slide-up">
-            {/* Header con imagen clickeable y cerrar */}
-            <div className="sticky top-0 bg-white dark:bg-slate-800 z-10 p-4 border-b border-slate-200 dark:border-slate-700">
-              <div className="flex items-center gap-3">
-                {/* Imagen thumbnail - clickeable para abrir galería */}
-                {(() => {
-                  const imgs = obtenerImagenes(productoSeleccionado)
-                  return (
-                    <div 
-                      onClick={() => {
-                        if (imgs.length > 0) {
-                          setGaleriaAbierta(true)
-                          setImagenGaleriaActiva(0)
-                        }
-                      }}
-                      className="relative w-20 h-20 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 flex-shrink-0 cursor-pointer active:scale-95 transition-transform"
-                    >
-                      {imgs.length > 0 ? (
-                        <>
-                          <img src={imgs[0]} alt="" className="w-full h-full object-cover" />
-                          {imgs.length > 1 && (
-                            <div className="absolute bottom-1 right-1 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded-full font-bold">
-                              +{imgs.length - 1}
-                            </div>
-                          )}
-                          <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center">
-                            <span className="text-white text-xl opacity-0 hover:opacity-100">🔍</span>
+          
+          {/* Panel del producto */}
+          <div className="relative w-full bg-white dark:bg-slate-900 rounded-t-[2rem] max-h-[90vh] overflow-auto animate-slide-up shadow-2xl">
+            {/* Handle para arrastrar */}
+            <div className="sticky top-0 z-20 pt-3 pb-2 bg-white dark:bg-slate-900">
+              <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-full mx-auto" />
+            </div>
+            
+            {/* Header con imagen grande */}
+            <div className="relative">
+              {(() => {
+                const imgs = obtenerImagenes(productoSeleccionado)
+                const descuento = productoSeleccionado.descuento || 0
+                
+                return (
+                  <div 
+                    onClick={() => {
+                      if (imgs.length > 0) {
+                        setGaleriaAbierta(true)
+                        setImagenGaleriaActiva(0)
+                      }
+                    }}
+                    className="relative aspect-[4/3] mx-4 rounded-2xl overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 cursor-pointer active:scale-[0.98] transition-transform"
+                  >
+                    {imgs.length > 0 ? (
+                      <>
+                        <img src={imgs[0]} alt="" className="w-full h-full object-cover" />
+                        {imgs.length > 1 && (
+                          <div className="absolute bottom-3 right-3 bg-black/70 backdrop-blur-sm text-white text-sm px-3 py-1.5 rounded-full font-bold flex items-center gap-1">
+                            📷 {imgs.length} fotos
                           </div>
-                        </>
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-3xl">
+                        )}
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 active:opacity-100 bg-black/20 transition-opacity">
+                          <span className="text-white text-2xl bg-black/50 p-3 rounded-full">🔍</span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-6xl">
                           {(productoSeleccionado.tipo_producto || 'ropa') === 'ropa' ? '👖' : 
                            productoSeleccionado.tipo_producto === 'perfumes' ? '🧴' : '🧸'}
-                        </div>
-                      )}
-                    </div>
-                  )
-                })()}
-                
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <h2 className="font-bold text-slate-900 dark:text-white text-base leading-tight line-clamp-2">
-                    {productoSeleccionado.nombre}
-                  </h2>
-                  {/* Precio con descuento */}
-                  {(() => {
-                    const precioBase = tallaSeleccionada?.precio_venta || obtenerPrecioMinimo(productoSeleccionado.variantes_producto)
-                    const descuento = productoSeleccionado.descuento || 0
-                    const precioFinal = descuento > 0 ? precioBase * (1 - descuento / 100) : precioBase
-                    
-                    return descuento > 0 ? (
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                            -{descuento}%
-                          </span>
-                          <span className="text-sm text-slate-400 line-through">
-                            {formatearMoneda(precioBase)}
-                          </span>
-                        </div>
-                        <p className="text-xl font-black text-green-600">
-                          {formatearMoneda(precioFinal)}
-                        </p>
+                        </span>
                       </div>
-                    ) : (
-                      <p className="text-xl font-black text-green-600">
-                        {formatearMoneda(precioBase)}
-                      </p>
-                    )
-                  })()}
-                  {obtenerImagenes(productoSeleccionado).length > 1 && (
-                    <p className="text-xs text-blue-500 mt-0.5">
-                      📷 Toca la foto para ver más
-                    </p>
-                  )}
-                </div>
-                
-                {/* Cerrar */}
-                <button
-                  onClick={() => setProductoSeleccionado(null)}
-                  className="w-10 h-10 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center flex-shrink-0"
-                >
-                  <X className="w-5 h-5 text-slate-500" />
-                </button>
-              </div>
+                    )}
+                    
+                    {/* Badge de descuento */}
+                    {descuento > 0 && (
+                      <div className="absolute top-3 left-3 animate-float">
+                        <span className="px-3 py-1.5 bg-gradient-to-r from-red-500 to-orange-500 text-white text-sm font-black rounded-full shadow-lg flex items-center gap-1">
+                          🔥 -{descuento}% OFF
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
+              
+              {/* Botón cerrar flotante */}
+              <button
+                onClick={() => setProductoSeleccionado(null)}
+                className="absolute top-2 right-6 w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center active:scale-90 transition-transform"
+              >
+                <X className="w-5 h-5 text-white" />
+              </button>
             </div>
 
-            {/* Contenido */}
-            <div className="p-4">
+            {/* Info del producto */}
+            <div className="p-4 pt-3">
+              <h2 className="font-black text-slate-900 dark:text-white text-xl leading-tight mb-2">
+                {productoSeleccionado.nombre}
+              </h2>
+              
+              {/* Precio con descuento */}
+              {(() => {
+                const precioBase = tallaSeleccionada?.precio_venta || obtenerPrecioMinimo(productoSeleccionado.variantes_producto)
+                const descuento = productoSeleccionado.descuento || 0
+                const precioFinal = descuento > 0 ? precioBase * (1 - descuento / 100) : precioBase
+                
+                return descuento > 0 ? (
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="text-2xl font-black text-green-500">
+                      {formatearMoneda(precioFinal)}
+                    </span>
+                    <span className="text-lg text-slate-400 line-through">
+                      {formatearMoneda(precioBase)}
+                    </span>
+                    <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-xs font-bold rounded-lg">
+                      Ahorras {formatearMoneda(precioBase - precioFinal)}
+                    </span>
+                  </div>
+                ) : (
+                  <p className="text-2xl font-black text-green-500 mb-4">
+                    {formatearMoneda(precioBase)}
+                  </p>
+                )
+              })()}
               {/* Verificar si hay stock */}
               {(() => {
                 const stockProducto = productoSeleccionado.variantes_producto?.reduce((acc, v) => acc + v.stock_actual, 0) || 0
@@ -530,44 +569,53 @@ export default function PaginaCatalogo() {
                 const esRopa = (productoSeleccionado.tipo_producto || 'ropa') === 'ropa'
                 
                 return estaAgotado ? (
-                  <div className="text-center py-6">
-                    <p className="text-4xl mb-2">😔</p>
-                    <p className="text-slate-500 dark:text-slate-400 font-medium mb-4">
-                      Producto agotado
+                  <div className="text-center py-8">
+                    <div className="text-6xl mb-3 animate-float">😔</div>
+                    <p className="text-slate-600 dark:text-slate-400 font-semibold text-lg mb-4">
+                      ¡Oh no! Producto agotado
                     </p>
                     <a
                       href={`https://wa.me/${WHATSAPP_VENDEDOR}?text=Hola!%20Me%20interesa%20"${encodeURIComponent(productoSeleccionado.nombre)}"%20pero%20está%20agotado.%20¿Cuándo%20tendrán?`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-full font-medium"
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-full font-bold shadow-lg active:scale-95 transition-transform"
                     >
-                      <MessageCircle className="w-4 h-4" />
+                      <MessageCircle className="w-5 h-5" />
                       Avisar cuando llegue
                     </a>
                   </div>
                 ) : (
                   <>
-                    {/* Tallas/Opciones */}
+                    {/* Tallas/Opciones - Mejorado */}
                     {tallasConStock.length > 0 && (
-                      <div className="mb-4">
-                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                          {esRopa ? 'Selecciona talla:' : productoSeleccionado.tipo_producto === 'perfumes' ? 'Tamaño:' : 'Opciones:'}
+                      <div className="mb-5">
+                        <p className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
+                          {esRopa ? '👕 Selecciona tu talla:' : productoSeleccionado.tipo_producto === 'perfumes' ? '🧴 Tamaño:' : '🎁 Opciones:'}
                         </p>
-                        <div className="flex flex-wrap gap-2">
-                          {tallasConStock.map(variante => (
+                        <div className="grid grid-cols-3 gap-2">
+                          {tallasConStock.map((variante, idx) => (
                             <button
                               key={variante.id}
                               onClick={() => setTallaSeleccionada(variante)}
                               className={cn(
-                                'px-4 py-2 rounded-xl font-bold transition-all text-sm',
+                                'relative py-3 px-2 rounded-xl font-bold transition-all text-sm border-2 tap-feedback',
                                 tallaSeleccionada?.id === variante.id
-                                  ? 'bg-green-500 text-white shadow-lg'
-                                  : 'bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white'
+                                  ? 'bg-green-500 border-green-500 text-white shadow-lg shadow-green-500/30 scale-105'
+                                  : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white'
                               )}
+                              style={{ animationDelay: `${idx * 0.05}s` }}
                             >
-                              {variante.talla}
-                              {esRopa && variante.color && variante.color !== 'Sin especificar' && (
-                                <span className="block text-xs opacity-70">{variante.color}</span>
+                              <span className="block text-lg">{variante.talla}</span>
+                              {esRopa && variante.color && variante.color !== '' && (
+                                <span className={cn(
+                                  "block text-xs mt-0.5",
+                                  tallaSeleccionada?.id === variante.id ? "text-white/80" : "text-slate-500"
+                                )}>{variante.color}</span>
+                              )}
+                              {tallaSeleccionada?.id === variante.id && (
+                                <div className="absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-md">
+                                  <span className="text-green-500 text-xs">✓</span>
+                                </div>
                               )}
                             </button>
                           ))}
@@ -575,42 +623,51 @@ export default function PaginaCatalogo() {
                       </div>
                     )}
 
-                    {/* Botón de compra grande */}
+                    {/* Botón de compra mejorado */}
                     <button
                       onClick={() => pedirPorWhatsApp(productoSeleccionado, tallaSeleccionada)}
-                      className="w-full py-4 bg-green-500 hover:bg-green-600 text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-all"
+                      className={cn(
+                        "w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 shadow-xl active:scale-[0.97] transition-all",
+                        tallaSeleccionada 
+                          ? "bg-gradient-to-r from-green-500 to-green-600 text-white animate-glow" 
+                          : "bg-gradient-to-r from-green-500 to-green-600 text-white"
+                      )}
                     >
                       <MessageCircle className="w-6 h-6" />
-                      {tallaSeleccionada ? '¡Lo quiero!' : 'Pedir por WhatsApp'}
+                      <span>{tallaSeleccionada ? '¡Lo quiero! 🛒' : 'Pedir por WhatsApp'}</span>
                     </button>
                     
-                    <p className="text-center text-xs text-slate-400 mt-2">
-                      Respuesta inmediata 💬
+                    <p className="text-center text-sm text-slate-500 dark:text-slate-400 mt-3 flex items-center justify-center gap-2">
+                      <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                      Respuesta en menos de 5 minutos
                     </p>
                   </>
                 )
               })()}
             </div>
+            
+            {/* Espacio para el safe area */}
+            <div className="h-6 bg-white dark:bg-slate-900"></div>
           </div>
         </div>
       )}
 
-      {/* Botón flotante de WhatsApp */}
+      {/* Botón flotante de WhatsApp - Mejorado */}
       <a
         href={`https://wa.me/${WHATSAPP_VENDEDOR}?text=¡Hola!%20Vi%20tu%20catálogo%20👋`}
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed z-40 bottom-20 right-4 w-14 h-14 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-xl shadow-green-500/40 flex items-center justify-center transition-all hover:scale-110 active:scale-95"
+        className="fixed z-40 bottom-20 right-4 w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 text-white rounded-full shadow-xl shadow-green-500/50 flex items-center justify-center active:scale-90 transition-transform animate-float"
       >
         <svg viewBox="0 0 24 24" className="w-7 h-7 fill-current">
           <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
         </svg>
       </a>
 
-      {/* Barra inferior con contacto */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-green-500 to-green-600 p-3 flex items-center justify-center gap-2">
-        <MessageCircle className="w-4 h-4 text-white" />
-        <span className="text-sm text-white font-medium">
+      {/* Barra inferior con contacto - Mejorado */}
+      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-green-500 via-green-600 to-green-500 p-3 flex items-center justify-center gap-2 shadow-lg backdrop-blur-sm bg-opacity-95">
+        <span className="animate-wiggle inline-block">👆</span>
+        <span className="text-sm text-white font-semibold">
           Toca cualquier producto para pedir
         </span>
       </div>

@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Configurar dark mode por clase */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ========================================
    SISTEMA DE INVENTARIO - ESTILOS GLOBALES
    Colores y variables CSS personalizadas
@@ -24,6 +27,7 @@
   --texto-principal: #f1f5f9;
   --texto-secundario: #94a3b8;
   --borde: #334155;
+  color-scheme: dark;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -40,6 +44,7 @@ body {
   background: var(--fondo);
   color: var(--texto-principal);
   font-family: system-ui, -apple-system, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Scrollbar personalizado para móvil */
@@ -198,4 +203,128 @@ body {
 
 .no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* ========================================
+   ANIMACIONES PARA CATÁLOGO MÓVIL
+   ======================================== */
+
+/* Entrada escalonada de productos */
+@keyframes staggerFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-stagger {
+  animation: staggerFadeIn 0.4s ease-out forwards;
+  opacity: 0;
+}
+
+/* Efecto de brillo en productos con descuento */
+@keyframes shine {
+  0% {
+    left: -100%;
+  }
+  50%, 100% {
+    left: 100%;
+  }
+}
+
+.shine-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.shine-effect::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: shine 3s infinite;
+}
+
+/* Efecto heartbeat para ofertas */
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  10% { transform: scale(1.1); }
+  20% { transform: scale(1); }
+  30% { transform: scale(1.1); }
+  40% { transform: scale(1); }
+}
+
+.animate-heartbeat {
+  animation: heartbeat 2s ease-in-out infinite;
+}
+
+/* Float suave para badges */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.animate-float {
+  animation: float 2s ease-in-out infinite;
+}
+
+/* Wiggle para llamar atención */
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-3deg); }
+  75% { transform: rotate(3deg); }
+}
+
+.animate-wiggle {
+  animation: wiggle 0.5s ease-in-out;
+}
+
+/* Glow pulsante */
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 5px rgba(239, 68, 68, 0.5); }
+  50% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.8), 0 0 30px rgba(239, 68, 68, 0.4); }
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* Gradient animado para headers */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease infinite;
+}
+
+/* Tap feedback para móvil */
+.tap-feedback {
+  transition: transform 0.1s ease, opacity 0.1s ease;
+}
+
+.tap-feedback:active {
+  transform: scale(0.95);
+  opacity: 0.9;
+}
+
+/* Smooth image load */
+.img-smooth {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.img-smooth.loaded {
+  opacity: 1;
+}
 }
