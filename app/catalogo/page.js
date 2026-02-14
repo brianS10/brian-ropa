@@ -14,7 +14,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Search, X, MessageCircle, Share2 } from 'lucide-react'
+import { Search, X, MessageCircle, Share2, SlidersHorizontal, ChevronDown, Sparkles, TrendingDown, Clock } from 'lucide-react'
 import { supabase, estaConfigurado } from '@/lib/base_datos/cliente_supabase'
 import { formatearMoneda, cn } from '@/lib/utilidades'
 import ToggleTema from '@/componentes/ToggleTema'
@@ -23,6 +23,14 @@ import { SkeletonLista } from '@/componentes/Skeletons'
 // Número de WhatsApp del vendedor
 const WHATSAPP_VENDEDOR = '5215582258230'
 const NOMBRE_TIENDA = 'Tu Tienda'
+
+// Opciones de ordenamiento
+const OPCIONES_ORDEN = [
+  { valor: 'recientes', etiqueta: 'Más recientes', icono: Clock },
+  { valor: 'precio-bajo', etiqueta: 'Menor precio', icono: TrendingDown },
+  { valor: 'precio-alto', etiqueta: 'Mayor precio', icono: TrendingDown },
+  { valor: 'ofertas', etiqueta: 'Ofertas primero', icono: Sparkles },
+]
 
 // Tipos de productos principales
 const TIPOS_PRODUCTO = [
@@ -72,6 +80,10 @@ export default function PaginaCatalogo() {
   const [tallaSeleccionada, setTallaSeleccionada] = useState(null)
   const [galeriaAbierta, setGaleriaAbierta] = useState(false)
   const [imagenGaleriaActiva, setImagenGaleriaActiva] = useState(0)
+  
+  // Ordenamiento
+  const [ordenActivo, setOrdenActivo] = useState('recientes')
+  const [mostrarOrden, setMostrarOrden] = useState(false)
 
   // Obtener categorías según el tipo seleccionado
   const categoriasDisponibles = CATEGORIAS_POR_TIPO[tipoActivo] || CATEGORIAS_POR_TIPO.todos
@@ -115,23 +127,7 @@ export default function PaginaCatalogo() {
     setCategoriaActiva('todos')
   }
 
-  // Filtrar productos por tipo y categoría
-  const productosFiltrados = productos.filter(p => {
-    const coincideBusqueda = p.nombre.toLowerCase().includes(busqueda.toLowerCase())
-    
-    // Filtro por tipo de producto
-    let coincideTipo = true
-    if (tipoActivo !== 'todos') {
-      coincideTipo = p.tipo_producto === tipoActivo
-    }
-    
-    // Filtro por categoría
-    const coincideCategoria = categoriaActiva === 'todos' || p.categoria === categoriaActiva
-    
-    return coincideBusqueda && coincideTipo && coincideCategoria
-  })
-
-  // Obtener precio mínimo
+  // Obtener precio mínimo (definido antes de usarse en el filtro)
   const obtenerPrecioMinimo = (variantes) => {
     if (!variantes || variantes.length === 0) return 0
     const variantesConStock = variantes.filter(v => v.stock_actual > 0)
@@ -145,6 +141,37 @@ export default function PaginaCatalogo() {
     return variantes.filter(v => v.stock_actual > 0)
   }
 
+  // Filtrar productos por tipo y categoría
+  const productosFiltrados = productos
+    .filter(p => {
+      const coincideBusqueda = p.nombre.toLowerCase().includes(busqueda.toLowerCase())
+      
+      // Filtro por tipo de producto
+      let coincideTipo = true
+      if (tipoActivo !== 'todos') {
+        coincideTipo = p.tipo_producto === tipoActivo
+      }
+      
+      // Filtro por categoría
+      const coincideCategoria = categoriaActiva === 'todos' || p.categoria === categoriaActiva
+      
+      return coincideBusqueda && coincideTipo && coincideCategoria
+    })
+    .sort((a, b) => {
+      // Ordenar según la opción seleccionada
+      switch (ordenActivo) {
+        case 'precio-bajo':
+          return obtenerPrecioMinimo(a.variantes_producto) - obtenerPrecioMinimo(b.variantes_producto)
+        case 'precio-alto':
+          return obtenerPrecioMinimo(b.variantes_producto) - obtenerPrecioMinimo(a.variantes_producto)
+        case 'ofertas':
+          return (b.descuento || 0) - (a.descuento || 0)
+        case 'recientes':
+        default:
+          return new Date(b.creado_en || 0) - new Date(a.creado_en || 0)
+      }
+    })
+
   // Enviar mensaje por WhatsApp
   const pedirPorWhatsApp = (producto, variante = null) => {
     const precioBase = variante?.precio_venta || obtenerPrecioMinimo(producto.variantes_producto)
@@ -157,7 +184,7 @@ export default function PaginaCatalogo() {
     if (variante) {
       if (esRopa) {
         mensaje += `📏 Talla: ${variante.talla}\n`
-        if (variante.color && variante.color !== 'Sin especificar') {
+        if (variante.color && variante.color !== '') {
           mensaje += `🎨 Color: ${variante.color}\n`
         }
       } else {
@@ -176,10 +203,39 @@ export default function PaginaCatalogo() {
     window.open(url, '_blank')
   }
 
+  // Compartir producto individual
+  const compartirProducto = async (producto, e) => {
+    e?.stopPropagation()
+    const precioBase = obtenerPrecioMinimo(producto.variantes_producto)
+    const descuento = producto.descuento || 0
+    const precioFinal = descuento > 0 ? precioBase * (1 - descuento / 100) : precioBase
+    
+    const texto = descuento > 0 
+      ? `🔥 ¡OFERTA! ${producto.nombre} - ${formatearMoneda(precioFinal)} (antes ${formatearMoneda(precioBase)}) -${descuento}% OFF`
+      : `👀 Mira esto: ${producto.nombre} - ${formatearMoneda(precioBase)}`
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({ 
+          title: producto.nombre, 
+          text: texto,
+          url: window.location.href 
+        })
+      } catch (err) {
+        // Usuario canceló
+      }
+    } else {
+      navigator.clipboard.writeText(`${texto}\n${window.location.href}`)
+      // Mostrar feedback
+      setProductoAnimado(`share-${producto.id}`)
+      setTimeout(() => setProductoAnimado(null), 1500)
+    }
+  }
+
   // Compartir catálogo
   const compartirCatalogo = async () => {
     const url = window.location.href
-    const texto = `¡Mira estos pantalones! 👖\n${url}`
+    const texto = `¡Mira estos productos! 🛒\n${url}`
     
     if (navigator.share) {
       try {
@@ -300,13 +356,61 @@ export default function PaginaCatalogo() {
 
       {/* Contenido */}
       <main className="p-4 pb-28">
-        {/* Contador con animación */}
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-sm text-slate-500 dark:text-slate-400 font-medium flex items-center gap-2">
+        {/* Barra de filtros y ordenamiento */}
+        <div className="flex items-center justify-between mb-4 gap-2">
+          {/* Contador */}
+          <p className="text-sm text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1.5">
             <span className="inline-block w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500"></span>
             <span className="font-bold text-slate-700 dark:text-slate-200">{productosFiltrados.length}</span>
-            producto{productosFiltrados.length !== 1 && 's'} disponible{productosFiltrados.length !== 1 && 's'}
+            <span>productos</span>
           </p>
+          
+          {/* Botón de ordenar */}
+          <div className="relative">
+            <button
+              onClick={() => setMostrarOrden(!mostrarOrden)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-full text-xs font-semibold text-slate-600 dark:text-slate-400 tap-feedback"
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">
+                {OPCIONES_ORDEN.find(o => o.valor === ordenActivo)?.etiqueta || 'Ordenar'}
+              </span>
+              <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", mostrarOrden && "rotate-180")} />
+            </button>
+            
+            {/* Dropdown de ordenamiento */}
+            {mostrarOrden && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setMostrarOrden(false)} />
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden z-50 animate-scale-in">
+                  {OPCIONES_ORDEN.map((opcion) => {
+                    const Icono = opcion.icono
+                    return (
+                      <button
+                        key={opcion.valor}
+                        onClick={() => {
+                          setOrdenActivo(opcion.valor)
+                          setMostrarOrden(false)
+                        }}
+                        className={cn(
+                          "w-full flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors",
+                          ordenActivo === opcion.valor
+                            ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                            : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50"
+                        )}
+                      >
+                        <Icono className={cn("w-4 h-4", opcion.valor === 'precio-alto' && "rotate-180")} />
+                        {opcion.etiqueta}
+                        {ordenActivo === opcion.valor && (
+                          <span className="ml-auto text-blue-500">✓</span>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Grid de productos */}
@@ -522,13 +626,21 @@ export default function PaginaCatalogo() {
                 )
               })()}
               
-              {/* Botón cerrar flotante */}
-              <button
-                onClick={() => setProductoSeleccionado(null)}
-                className="absolute top-2 right-6 w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center active:scale-90 transition-transform"
-              >
-                <X className="w-5 h-5 text-white" />
-              </button>
+              {/* Botones flotantes - Cerrar y Compartir */}
+              <div className="absolute top-2 right-6 flex items-center gap-2">
+                <button
+                  onClick={(e) => compartirProducto(productoSeleccionado, e)}
+                  className="w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center active:scale-90 transition-transform"
+                >
+                  <Share2 className="w-5 h-5 text-white" />
+                </button>
+                <button
+                  onClick={() => setProductoSeleccionado(null)}
+                  className="w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center active:scale-90 transition-transform"
+                >
+                  <X className="w-5 h-5 text-white" />
+                </button>
+              </div>
             </div>
 
             {/* Info del producto */}
