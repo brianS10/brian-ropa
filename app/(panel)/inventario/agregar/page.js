@@ -14,7 +14,7 @@ import { supabase, estaConfigurado } from '@/lib/base_datos/cliente_supabase'
 import BotonPrimario from '@/componentes/ui/BotonPrimario'
 import EntradaTexto from '@/componentes/ui/EntradaTexto'
 import SubirImagen from '@/componentes/SubirImagen'
-import { CATEGORIAS, TALLAS_ESTANDAR, COLORES_COMUNES, TIPOS_PRODUCTO, CATEGORIAS_POR_TIPO } from '@/lib/constantes'
+import { CATEGORIAS, TALLAS_ESTANDAR, COLORES_COMUNES, TIPOS_PRODUCTO, CATEGORIAS_POR_TIPO, TAMANOS_PERFUMES, EDADES_JUGUETES } from '@/lib/constantes'
 
 export default function PaginaAgregarProducto() {
   const router = useRouter()
@@ -37,12 +37,35 @@ export default function PaginaAgregarProducto() {
     { talla: '30', color: 'Negro', precio_venta: '', precio_costo: '', stock_actual: '' }
   ])
 
+  // Obtener variante por defecto según tipo
+  const obtenerVarianteDefault = (tipo) => {
+    switch(tipo) {
+      case 'perfumes':
+        return { talla: '100ml', color: 'Sin especificar', precio_venta: '', precio_costo: '', stock_actual: '' }
+      case 'juguetes':
+        return { talla: 'Todas las edades', color: 'Sin especificar', precio_venta: '', precio_costo: '', stock_actual: '' }
+      default:
+        return { talla: '30', color: 'Negro', precio_venta: '', precio_costo: '', stock_actual: '' }
+    }
+  }
+
+  // Cambiar tipo de producto
+  const cambiarTipoProducto = (nuevoTipo) => {
+    setProducto({ 
+      ...producto, 
+      tipo_producto: nuevoTipo,
+      categoria: CATEGORIAS_POR_TIPO[nuevoTipo]?.[1]?.valor || 'otros'
+    })
+    // Resetear variantes al cambiar tipo
+    setVariantes([obtenerVarianteDefault(nuevoTipo)])
+  }
+
   // Agregar nueva variante
   const agregarVariante = () => {
-    setVariantes([
-      ...variantes,
-      { talla: '32', color: 'Negro', precio_venta: '', precio_costo: '', stock_actual: '' }
-    ])
+    const nuevaVariante = obtenerVarianteDefault(producto.tipo_producto)
+    nuevaVariante.precio_venta = variantes[0]?.precio_venta || ''
+    nuevaVariante.precio_costo = variantes[0]?.precio_costo || ''
+    setVariantes([...variantes, nuevaVariante])
   }
 
   // Eliminar variante
@@ -192,11 +215,7 @@ export default function PaginaAgregarProducto() {
               <button
                 key={tipo.valor}
                 type="button"
-                onClick={() => setProducto({ 
-                  ...producto, 
-                  tipo_producto: tipo.valor,
-                  categoria: CATEGORIAS_POR_TIPO[tipo.valor]?.[1]?.valor || 'otros'
-                })}
+                onClick={() => cambiarTipoProducto(tipo.valor)}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all border-2 ${
                   producto.tipo_producto === tipo.valor
                     ? `bg-gradient-to-r ${tipo.color} text-white border-transparent shadow-lg`
@@ -255,7 +274,8 @@ export default function PaginaAgregarProducto() {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-semibold text-slate-900 dark:text-white">
-            {producto.tipo_producto === 'ropa' ? 'Tallas y Stock' : 'Precio y Stock'}
+            {producto.tipo_producto === 'ropa' ? '👖 Tallas y Stock' : 
+             producto.tipo_producto === 'perfumes' ? '🧴 Tamaños y Stock' : '🧸 Opciones y Stock'}
           </h2>
           {producto.tipo_producto === 'ropa' && (
             <button
@@ -276,7 +296,8 @@ export default function PaginaAgregarProducto() {
             >
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  {producto.tipo_producto === 'ropa' ? `Variante #${indice + 1}` : `Opción #${indice + 1}`}
+                  {producto.tipo_producto === 'ropa' ? `Talla #${indice + 1}` : 
+                   producto.tipo_producto === 'perfumes' ? `Tamaño #${indice + 1}` : `Opción #${indice + 1}`}
                 </span>
                 {variantes.length > 1 && (
                   <button
@@ -289,7 +310,7 @@ export default function PaginaAgregarProducto() {
                 )}
               </div>
 
-              {/* Talla y Color - Solo para ropa */}
+              {/* ROPA: Talla y Color */}
               {producto.tipo_producto === 'ropa' && (
                 <div className="grid grid-cols-2 gap-2">
                   <div>
@@ -319,19 +340,35 @@ export default function PaginaAgregarProducto() {
                 </div>
               )}
 
-              {/* Descripción para perfumes/juguetes */}
-              {producto.tipo_producto !== 'ropa' && (
+              {/* PERFUMES: Tamaño */}
+              {producto.tipo_producto === 'perfumes' && (
                 <div>
-                  <label className="text-xs text-slate-500">
-                    {producto.tipo_producto === 'perfumes' ? 'Tamaño/Presentación' : 'Variante'}
-                  </label>
-                  <input
-                    type="text"
-                    placeholder={producto.tipo_producto === 'perfumes' ? 'Ej: 100ml' : 'Ej: Grande'}
+                  <label className="text-xs text-slate-500">Tamaño</label>
+                  <select
                     value={variante.talla}
                     onChange={(e) => actualizarVariante(indice, 'talla', e.target.value)}
                     className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 py-1.5 text-sm"
-                  />
+                  >
+                    {TAMANOS_PERFUMES.map(t => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* JUGUETES: Edad recomendada */}
+              {producto.tipo_producto === 'juguetes' && (
+                <div>
+                  <label className="text-xs text-slate-500">Edad recomendada</label>
+                  <select
+                    value={variante.talla}
+                    onChange={(e) => actualizarVariante(indice, 'talla', e.target.value)}
+                    className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 py-1.5 text-sm"
+                  >
+                    {EDADES_JUGUETES.map(e => (
+                      <option key={e} value={e}>{e}</option>
+                    ))}
+                  </select>
                 </div>
               )}
 
@@ -377,7 +414,8 @@ export default function PaginaAgregarProducto() {
           className="mt-3 w-full py-2 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg text-slate-500 hover:border-blue-500 hover:text-blue-500 transition-colors flex items-center justify-center gap-2"
         >
           <Plus className="w-4 h-4" />
-          {producto.tipo_producto === 'ropa' ? 'Agregar otra talla' : 'Agregar otra opción'}
+          {producto.tipo_producto === 'ropa' ? 'Agregar otra talla' : 
+           producto.tipo_producto === 'perfumes' ? 'Agregar otro tamaño' : 'Agregar otra opción'}
         </button>
       </div>
 

@@ -1,19 +1,20 @@
 /**
  * Página: Editar Producto
  * ========================
- * Permite modificar el stock, imágenes y detalles de un producto
+ * Permite modificar el stock, imágenes, precios y detalles de un producto
  */
 
 'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { ArrowLeft, Save, Plus, Minus, Image as ImageIcon } from 'lucide-react'
+import { ArrowLeft, Save, Plus, Minus, Image as ImageIcon, Trash2, Edit3 } from 'lucide-react'
 import Link from 'next/link'
 import { supabase, estaConfigurado } from '@/lib/base_datos/cliente_supabase'
 import BotonPrimario from '@/componentes/ui/BotonPrimario'
 import SubirImagen from '@/componentes/SubirImagen'
 import { formatearMoneda } from '@/lib/utilidades'
+import { TIPOS_PRODUCTO, CATEGORIAS_POR_TIPO, TALLAS_ESTANDAR, COLORES_COMUNES, TAMANOS_PERFUMES, EDADES_JUGUETES } from '@/lib/constantes'
 
 export default function PaginaEditarStock() {
   const router = useRouter()
@@ -26,7 +27,8 @@ export default function PaginaEditarStock() {
   const [cargando, setCargando] = useState(true)
   const [guardando, setGuardando] = useState(false)
   const [mensaje, setMensaje] = useState({ tipo: '', texto: '' })
-  const [pestana, setPestana] = useState('stock') // 'stock' | 'imagenes'
+  const [pestana, setPestana] = useState('info') // 'info' | 'stock' | 'imagenes'
+  const [productoModificado, setProductoModificado] = useState(false)
 
   // Cargar producto y variantes
   useEffect(() => {
@@ -81,6 +83,22 @@ export default function PaginaEditarStock() {
     }))
   }
 
+  // Actualizar precio de variante
+  const actualizarPrecioVariante = (varianteId, campo, valor) => {
+    setVariantes(variantes.map(v => {
+      if (v.id === varianteId) {
+        return { ...v, [campo]: parseFloat(valor) || 0, modificado: true }
+      }
+      return v
+    }))
+  }
+
+  // Actualizar info del producto
+  const actualizarProducto = (campo, valor) => {
+    setProducto({ ...producto, [campo]: valor })
+    setProductoModificado(true)
+  }
+
   // Guardar cambios
   const guardarCambios = async () => {
     if (!estaConfigurado() || !supabase) return
@@ -89,22 +107,30 @@ export default function PaginaEditarStock() {
     setMensaje({ tipo: '', texto: '' })
 
     try {
-      // Actualizar variantes de stock
+      // Actualizar variantes (stock y precios)
       const variantesModificadas = variantes.filter(v => v.modificado)
 
       for (const variante of variantesModificadas) {
         const { error } = await supabase
           .from('variantes_producto')
-          .update({ stock_actual: variante.stock_actual })
+          .update({ 
+            stock_actual: variante.stock_actual,
+            precio_venta: variante.precio_venta,
+            precio_costo: variante.precio_costo
+          })
           .eq('id', variante.id)
 
         if (error) throw error
       }
 
-      // Actualizar imágenes del producto
+      // Actualizar producto (nombre, categoría, descripción, imágenes)
       const { error: errorProducto } = await supabase
         .from('productos')
         .update({ 
+          nombre: producto.nombre,
+          descripcion: producto.descripcion,
+          categoria: producto.categoria,
+          tipo_producto: producto.tipo_producto,
           imagenes: imagenes,
           imagen_url: imagenes[0] || null
         })
@@ -113,6 +139,7 @@ export default function PaginaEditarStock() {
       if (errorProducto) throw errorProducto
 
       setMensaje({ tipo: 'exito', texto: '¡Cambios guardados!' })
+      setProductoModificado(false)
       
       // Limpiar bandera de modificado
       setVariantes(variantes.map(v => ({ ...v, modificado: false })))
@@ -124,7 +151,7 @@ export default function PaginaEditarStock() {
     }
   }
 
-  const hayModificaciones = variantes.some(v => v.modificado)
+  const hayModificaciones = variantes.some(v => v.modificado) || productoModificado
 
   if (cargando) {
     return (
@@ -156,26 +183,36 @@ export default function PaginaEditarStock() {
       </header>
 
       {/* Pestañas */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-1 mb-4 bg-slate-100 dark:bg-slate-800 rounded-xl p-1">
+        <button
+          onClick={() => setPestana('info')}
+          className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-colors ${
+            pestana === 'info'
+              ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm'
+              : 'text-slate-600 dark:text-slate-400'
+          }`}
+        >
+          ✏️ Info
+        </button>
         <button
           onClick={() => setPestana('stock')}
-          className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
+          className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-colors ${
             pestana === 'stock'
-              ? 'bg-blue-600 text-white'
-              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+              ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm'
+              : 'text-slate-600 dark:text-slate-400'
           }`}
         >
           📦 Stock
         </button>
         <button
           onClick={() => setPestana('imagenes')}
-          className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
+          className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-colors ${
             pestana === 'imagenes'
-              ? 'bg-blue-600 text-white'
-              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+              ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm'
+              : 'text-slate-600 dark:text-slate-400'
           }`}
         >
-          📷 Fotos ({imagenes.length})
+          📷 Fotos
         </button>
       </div>
 
@@ -190,25 +227,158 @@ export default function PaginaEditarStock() {
         </div>
       )}
 
+      {/* Contenido de Info (Editar detalles) */}
+      {pestana === 'info' && producto && (
+        <div className="space-y-4">
+          {/* Nombre */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Nombre del producto
+            </label>
+            <input
+              type="text"
+              value={producto.nombre || ''}
+              onChange={(e) => actualizarProducto('nombre', e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+              placeholder="Ej: Playera básica"
+            />
+          </div>
+
+          {/* Tipo de producto */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Tipo de producto
+            </label>
+            <select
+              value={producto.tipo_producto || 'ropa'}
+              onChange={(e) => {
+                actualizarProducto('tipo_producto', e.target.value)
+                actualizarProducto('categoria', CATEGORIAS_POR_TIPO[e.target.value]?.[0] || 'General')
+              }}
+              className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+            >
+              {TIPOS_PRODUCTO.map((tipo) => (
+                <option key={tipo.valor} value={tipo.valor}>{tipo.etiqueta}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Categoría */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Categoría
+            </label>
+            <select
+              value={producto.categoria || ''}
+              onChange={(e) => actualizarProducto('categoria', e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+            >
+              {(CATEGORIAS_POR_TIPO[producto.tipo_producto || 'ropa'] || CATEGORIAS_POR_TIPO.ropa).map((cat) => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Descripción */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Descripción (opcional)
+            </label>
+            <textarea
+              value={producto.descripcion || ''}
+              onChange={(e) => actualizarProducto('descripcion', e.target.value)}
+              rows={3}
+              className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white resize-none"
+              placeholder="Descripción del producto..."
+            />
+          </div>
+
+          {/* Precios por variante */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Precios por variante
+            </label>
+            <div className="space-y-3">
+              {variantes.map((variante) => (
+                <div 
+                  key={variante.id}
+                  className={`bg-white dark:bg-slate-800 rounded-xl border p-3 ${
+                    variante.modificado 
+                      ? 'border-blue-500' 
+                      : 'border-slate-200 dark:border-slate-700'
+                  }`}
+                >
+                  <div className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    {variante.talla} · {variante.color}
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="flex-1">
+                      <label className="text-xs text-slate-500 mb-1 block">Precio venta</label>
+                      <input
+                        type="number"
+                        value={variante.precio_venta || ''}
+                        onChange={(e) => actualizarPrecioVariante(variante.id, 'precio_venta', e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                        placeholder="$0.00"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="text-xs text-slate-500 mb-1 block">Precio costo</label>
+                      <input
+                        type="number"
+                        value={variante.precio_costo || ''}
+                        onChange={(e) => actualizarPrecioVariante(variante.id, 'precio_costo', e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                        placeholder="$0.00"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Botón guardar */}
+          {hayModificaciones && (
+            <div className="fixed bottom-20 left-0 right-0 p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700">
+              <BotonPrimario
+                onClick={guardarCambios}
+                cargando={guardando}
+                icono={Save}
+                className="w-full"
+                tamanio="lg"
+              >
+                Guardar Cambios
+              </BotonPrimario>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Contenido de Imágenes */}
       {pestana === 'imagenes' && (
         <div className="space-y-4">
           <SubirImagen
             imagenes={imagenes}
-            onImagenesChange={setImagenes}
+            onImagenesChange={(nuevas) => {
+              setImagenes(nuevas)
+              setProductoModificado(true)
+            }}
             maxImagenes={5}
             productoId={productoId}
           />
           
-          <BotonPrimario
-            onClick={guardarCambios}
-            cargando={guardando}
-            icono={Save}
-            className="w-full"
-            tamanio="lg"
-          >
-            Guardar Fotos
-          </BotonPrimario>
+          {hayModificaciones && (
+            <BotonPrimario
+              onClick={guardarCambios}
+              cargando={guardando}
+              icono={Save}
+              className="w-full"
+              tamanio="lg"
+            >
+              Guardar Fotos
+            </BotonPrimario>
+          )}
         </div>
       )}
 

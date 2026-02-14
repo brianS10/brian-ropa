@@ -68,6 +68,8 @@ export default function PaginaCatalogo() {
   const [categoriaActiva, setCategoriaActiva] = useState('todos')
   const [productoSeleccionado, setProductoSeleccionado] = useState(null)
   const [tallaSeleccionada, setTallaSeleccionada] = useState(null)
+  const [galeriaAbierta, setGaleriaAbierta] = useState(false)
+  const [imagenGaleriaActiva, setImagenGaleriaActiva] = useState(0)
 
   // Obtener categorías según el tipo seleccionado
   const categoriasDisponibles = CATEGORIAS_POR_TIPO[tipoActivo] || CATEGORIAS_POR_TIPO.todos
@@ -396,23 +398,43 @@ export default function PaginaCatalogo() {
             onClick={() => setProductoSeleccionado(null)} 
           />
           <div className="relative w-full bg-white dark:bg-slate-800 rounded-t-[2rem] max-h-[85vh] overflow-auto animate-slide-up">
-            {/* Header con imagen pequeña y cerrar */}
+            {/* Header con imagen clickeable y cerrar */}
             <div className="sticky top-0 bg-white dark:bg-slate-800 z-10 p-4 border-b border-slate-200 dark:border-slate-700">
               <div className="flex items-center gap-3">
-                {/* Imagen thumbnail */}
-                <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 flex-shrink-0">
-                  {(() => {
-                    const imgs = obtenerImagenes(productoSeleccionado)
-                    return imgs.length > 0 ? (
-                      <img src={imgs[0]} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-2xl">
-                        {(productoSeleccionado.tipo_producto || 'ropa') === 'ropa' ? '👖' : 
-                         productoSeleccionado.tipo_producto === 'perfumes' ? '🧴' : '🧸'}
-                      </div>
-                    )
-                  })()}
-                </div>
+                {/* Imagen thumbnail - clickeable para abrir galería */}
+                {(() => {
+                  const imgs = obtenerImagenes(productoSeleccionado)
+                  return (
+                    <div 
+                      onClick={() => {
+                        if (imgs.length > 0) {
+                          setGaleriaAbierta(true)
+                          setImagenGaleriaActiva(0)
+                        }
+                      }}
+                      className="relative w-20 h-20 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 flex-shrink-0 cursor-pointer active:scale-95 transition-transform"
+                    >
+                      {imgs.length > 0 ? (
+                        <>
+                          <img src={imgs[0]} alt="" className="w-full h-full object-cover" />
+                          {imgs.length > 1 && (
+                            <div className="absolute bottom-1 right-1 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded-full font-bold">
+                              +{imgs.length - 1}
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center">
+                            <span className="text-white text-xl opacity-0 hover:opacity-100">🔍</span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-3xl">
+                          {(productoSeleccionado.tipo_producto || 'ropa') === 'ropa' ? '👖' : 
+                           productoSeleccionado.tipo_producto === 'perfumes' ? '🧴' : '🧸'}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })()}
                 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
@@ -422,6 +444,11 @@ export default function PaginaCatalogo() {
                   <p className="text-xl font-black text-green-600">
                     {formatearMoneda(tallaSeleccionada?.precio_venta || obtenerPrecioMinimo(productoSeleccionado.variantes_producto))}
                   </p>
+                  {obtenerImagenes(productoSeleccionado).length > 1 && (
+                    <p className="text-xs text-blue-500 mt-0.5">
+                      📷 Toca la foto para ver más
+                    </p>
+                  )}
                 </div>
                 
                 {/* Cerrar */}
@@ -528,6 +555,82 @@ export default function PaginaCatalogo() {
           Toca cualquier producto para pedir
         </span>
       </div>
+
+      {/* GALERÍA DE FOTOS A PANTALLA COMPLETA */}
+      {galeriaAbierta && productoSeleccionado && (
+        <div className="fixed inset-0 z-[100] bg-black flex flex-col">
+          {/* Header de galería */}
+          <div className="flex items-center justify-between p-4 bg-black/50">
+            <p className="text-white font-medium text-sm truncate flex-1">
+              {productoSeleccionado.nombre}
+            </p>
+            <div className="flex items-center gap-2">
+              <span className="text-white/70 text-sm">
+                {imagenGaleriaActiva + 1} / {obtenerImagenes(productoSeleccionado).length}
+              </span>
+              <button
+                onClick={() => setGaleriaAbierta(false)}
+                className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center"
+              >
+                <X className="w-6 h-6 text-white" />
+              </button>
+            </div>
+          </div>
+          
+          {/* Imagen principal */}
+          <div className="flex-1 flex items-center justify-center p-4 relative">
+            <img 
+              src={obtenerImagenes(productoSeleccionado)[imagenGaleriaActiva]} 
+              alt=""
+              className="max-w-full max-h-full object-contain"
+            />
+            
+            {/* Flechas de navegación */}
+            {obtenerImagenes(productoSeleccionado).length > 1 && (
+              <>
+                <button
+                  onClick={() => setImagenGaleriaActiva(prev => 
+                    prev === 0 ? obtenerImagenes(productoSeleccionado).length - 1 : prev - 1
+                  )}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-white text-2xl active:bg-white/30"
+                >
+                  ‹
+                </button>
+                <button
+                  onClick={() => setImagenGaleriaActiva(prev => 
+                    prev === obtenerImagenes(productoSeleccionado).length - 1 ? 0 : prev + 1
+                  )}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-white text-2xl active:bg-white/30"
+                >
+                  ›
+                </button>
+              </>
+            )}
+          </div>
+          
+          {/* Miniaturas */}
+          {obtenerImagenes(productoSeleccionado).length > 1 && (
+            <div className="p-4 bg-black/50">
+              <div className="flex gap-2 justify-center overflow-x-auto">
+                {obtenerImagenes(productoSeleccionado).map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setImagenGaleriaActiva(idx)}
+                    className={cn(
+                      'w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all',
+                      idx === imagenGaleriaActiva 
+                        ? 'border-white scale-110' 
+                        : 'border-transparent opacity-60'
+                    )}
+                  >
+                    <img src={img} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Estilos */}
       <style jsx global>{`
