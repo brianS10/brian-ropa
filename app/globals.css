@@ -327,4 +327,40 @@ body {
 .img-smooth.loaded {
   opacity: 1;
 }
+
+/* Fade in suave */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Scroll suave para toda la app */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Mejoras de touch para móvil */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Evitar que el texto se seleccione en botones */
+button, a {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Safe area para iPhones con notch */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 16px);
 }
