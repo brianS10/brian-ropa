@@ -9,7 +9,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Package, Search, AlertTriangle, Plus, Edit, Trash2 } from 'lucide-react'
+import { Package, Search, AlertTriangle, Plus, Edit, Trash2, Wrench } from 'lucide-react'
 import { usarInventario } from '@/hooks/usarInventario'
 import { formatearMoneda, obtenerEstadoStock, cn } from '@/lib/utilidades'
 import { supabase, estaConfigurado } from '@/lib/base_datos/cliente_supabase'
@@ -83,11 +83,18 @@ export default function PaginaInventario() {
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
           Inventario
         </h1>
-        <Link href="/inventario/agregar">
-          <BotonPrimario icono={Plus} tamanio="sm">
-            Agregar
-          </BotonPrimario>
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/arreglar-datos">
+            <button className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-600 hover:bg-amber-200 transition-colors">
+              <Wrench className="w-5 h-5" />
+            </button>
+          </Link>
+          <Link href="/inventario/agregar">
+            <BotonPrimario icono={Plus} tamanio="sm">
+              Agregar
+            </BotonPrimario>
+          </Link>
+        </div>
       </header>
 
       {/* Tarjetas de estadísticas */}
