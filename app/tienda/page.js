@@ -12,6 +12,7 @@ import { Search, ShoppingBag, Plus, Check, Filter, X, ChevronRight, Sparkles, Ch
 import { supabase, estaConfigurado } from '@/lib/base_datos/cliente_supabase'
 import { usarCarritoCliente } from '@/hooks/usarCarritoCliente'
 import { formatearMoneda, cn } from '@/lib/utilidades'
+import { WHATSAPP_VENDEDOR } from '@/lib/constantes'
 
 // Categorías disponibles
 const CATEGORIAS = [
@@ -469,7 +470,7 @@ export default function PaginaTienda() {
 
       {/* Botón flotante de WhatsApp */}
       <a
-        href="https://wa.me/5215582258230?text=Hola!%20Me%20interesa%20un%20producto"
+        href={`https://wa.me/${WHATSAPP_VENDEDOR}?text=Hola!%20Me%20interesa%20un%20producto`}
         target="_blank"
         rel="noopener noreferrer"
         className={`fixed z-50 w-14 h-14 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg shadow-green-500/30 flex items-center justify-center transition-all hover:scale-110 ${

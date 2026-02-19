@@ -9,24 +9,24 @@
  * ✅ Diseño bonito para móvil
  * ✅ WhatsApp para hacer pedidos
  * ✅ Múltiples tipos: Ropa, Perfumes, Juguetes
+ * ✅ Productos destacados (más vendidos)
  */
 
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Search, X, MessageCircle, Share2, SlidersHorizontal, ChevronDown, Sparkles, TrendingDown, Clock } from 'lucide-react'
+import { Search, X, MessageCircle, Share2, SlidersHorizontal, ChevronDown, Sparkles, TrendingDown, Clock, Star, TrendingUp } from 'lucide-react'
 import { supabase, estaConfigurado } from '@/lib/base_datos/cliente_supabase'
 import { formatearMoneda, cn } from '@/lib/utilidades'
+import { WHATSAPP_VENDEDOR, NOMBRE_TIENDA, CATEGORIAS_CATALOGO } from '@/lib/constantes'
 import ToggleTema from '@/componentes/ToggleTema'
 import { SkeletonLista } from '@/componentes/Skeletons'
 
-// Número de WhatsApp del vendedor
-const WHATSAPP_VENDEDOR = '5215582258230'
-const NOMBRE_TIENDA = 'Tu Tienda'
-
 // Opciones de ordenamiento
 const OPCIONES_ORDEN = [
+  { valor: 'destacados', etiqueta: 'Destacados ⭐', icono: Star },
   { valor: 'recientes', etiqueta: 'Más recientes', icono: Clock },
+  { valor: 'mas-vendidos', etiqueta: 'Más vendidos', icono: TrendingUp },
   { valor: 'precio-bajo', etiqueta: 'Menor precio', icono: TrendingDown },
   { valor: 'precio-alto', etiqueta: 'Mayor precio', icono: TrendingDown },
   { valor: 'ofertas', etiqueta: 'Ofertas primero', icono: Sparkles },
@@ -40,38 +40,9 @@ const TIPOS_PRODUCTO = [
   { valor: 'juguetes', etiqueta: 'Juguetes', emoji: '🧸', color: 'from-yellow-500 to-orange-500' },
 ]
 
-// Categorías por tipo
-const CATEGORIAS_POR_TIPO = {
-  todos: [
-    { valor: 'todos', etiqueta: 'Todos', emoji: '✨' },
-  ],
-  ropa: [
-    { valor: 'todos', etiqueta: 'Toda', emoji: '✨' },
-    { valor: 'mezclilla', etiqueta: 'Mezclilla', emoji: '👖' },
-    { valor: 'vestir', etiqueta: 'Vestir', emoji: '👔' },
-    { valor: 'cargo', etiqueta: 'Cargo', emoji: '🎒' },
-    { valor: 'deportivo', etiqueta: 'Deportivo', emoji: '🏃' },
-    { valor: 'casual', etiqueta: 'Casual', emoji: '😎' },
-    { valor: 'short', etiqueta: 'Shorts', emoji: '🩳' },
-    { valor: 'camisa', etiqueta: 'Camisas', emoji: '👕' },
-  ],
-  perfumes: [
-    { valor: 'todos', etiqueta: 'Todos', emoji: '✨' },
-    { valor: 'hombre', etiqueta: 'Hombre', emoji: '🧔' },
-    { valor: 'mujer', etiqueta: 'Mujer', emoji: '👩' },
-    { valor: 'unisex', etiqueta: 'Unisex', emoji: '🌈' },
-  ],
-  juguetes: [
-    { valor: 'todos', etiqueta: 'Todos', emoji: '✨' },
-    { valor: 'ninos', etiqueta: 'Niños', emoji: '👦' },
-    { valor: 'ninas', etiqueta: 'Niñas', emoji: '👧' },
-    { valor: 'bebes', etiqueta: 'Bebés', emoji: '👶' },
-    { valor: 'educativo', etiqueta: 'Educativo', emoji: '📚' },
-  ],
-}
-
 export default function PaginaCatalogo() {
   const [productos, setProductos] = useState([])
+  const [ventasPorProducto, setVentasPorProducto] = useState({}) // Contador de ventas
   const [cargando, setCargando] = useState(true)
   const [busqueda, setBusqueda] = useState('')
   const [tipoActivo, setTipoActivo] = useState('todos')
@@ -81,12 +52,12 @@ export default function PaginaCatalogo() {
   const [galeriaAbierta, setGaleriaAbierta] = useState(false)
   const [imagenGaleriaActiva, setImagenGaleriaActiva] = useState(0)
   
-  // Ordenamiento
-  const [ordenActivo, setOrdenActivo] = useState('recientes')
+  // Ordenamiento - Por defecto "destacados" para mostrar los más vendidos primero
+  const [ordenActivo, setOrdenActivo] = useState('destacados')
   const [mostrarOrden, setMostrarOrden] = useState(false)
 
   // Obtener categorías según el tipo seleccionado
-  const categoriasDisponibles = CATEGORIAS_POR_TIPO[tipoActivo] || CATEGORIAS_POR_TIPO.todos
+  const categoriasDisponibles = CATEGORIAS_CATALOGO[tipoActivo] || CATEGORIAS_CATALOGO.todos
 
   // Obtener imágenes del producto
   const obtenerImagenes = (producto) => {
@@ -99,7 +70,7 @@ export default function PaginaCatalogo() {
     return []
   }
 
-  // Cargar productos
+  // Cargar productos y estadísticas de ventas
   useEffect(() => {
     async function cargar() {
       if (!estaConfigurado() || !supabase) {
@@ -107,15 +78,31 @@ export default function PaginaCatalogo() {
         return
       }
 
+      // Cargar productos
       const { data } = await supabase
         .from('productos')
         .select(`*, variantes_producto (*)`)
-        .eq('estado', true) // Solo productos activos (no eliminados)
+        .eq('estado', true)
         .order('nombre')
-
-      // Mostrar TODOS los productos (incluso sin stock, pero en gris)
-      // Solo se ocultan los que tienen estado=false (eliminados)
+      
       setProductos(data || [])
+
+      // Cargar estadísticas de ventas para ordenar por más vendidos
+      const { data: detalles } = await supabase
+        .from('detalle_venta')
+        .select('variante_id, cantidad, variantes_producto!inner(producto_id)')
+      
+      // Contar ventas por producto
+      const conteo = {}
+      if (detalles) {
+        detalles.forEach(d => {
+          const prodId = d.variantes_producto?.producto_id
+          if (prodId) {
+            conteo[prodId] = (conteo[prodId] || 0) + (d.cantidad || 1)
+          }
+        })
+      }
+      setVentasPorProducto(conteo)
       setCargando(false)
     }
     cargar()
@@ -141,6 +128,14 @@ export default function PaginaCatalogo() {
     return variantes.filter(v => v.stock_actual > 0)
   }
 
+  // Verificar si un producto es destacado (tiene ventas o descuento)
+  const esDestacado = (producto) => {
+    const tieneVentas = (ventasPorProducto[producto.id] || 0) > 0
+    const tieneDescuento = (producto.descuento || 0) > 0
+    const esNuevo = new Date(producto.creado_en) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // 7 días
+    return tieneVentas || tieneDescuento || esNuevo
+  }
+
   // Filtrar productos por tipo y categoría
   const productosFiltrados = productos
     .filter(p => {
@@ -160,6 +155,14 @@ export default function PaginaCatalogo() {
     .sort((a, b) => {
       // Ordenar según la opción seleccionada
       switch (ordenActivo) {
+        case 'destacados':
+          // Primero los destacados, luego por ventas
+          const aDestacado = esDestacado(a) ? 1 : 0
+          const bDestacado = esDestacado(b) ? 1 : 0
+          if (bDestacado !== aDestacado) return bDestacado - aDestacado
+          return (ventasPorProducto[b.id] || 0) - (ventasPorProducto[a.id] || 0)
+        case 'mas-vendidos':
+          return (ventasPorProducto[b.id] || 0) - (ventasPorProducto[a.id] || 0)
         case 'precio-bajo':
           return obtenerPrecioMinimo(a.variantes_producto) - obtenerPrecioMinimo(b.variantes_producto)
         case 'precio-alto':
@@ -177,18 +180,27 @@ export default function PaginaCatalogo() {
     const precioBase = variante?.precio_venta || obtenerPrecioMinimo(producto.variantes_producto)
     const descuento = producto.descuento || 0
     const precioFinal = descuento > 0 ? precioBase * (1 - descuento / 100) : precioBase
-    const esRopa = (producto.tipo_producto || 'ropa') === 'ropa'
+    const tipoProducto = producto.tipo_producto || 'ropa'
+    
+    // Etiqueta según tipo de producto
+    const getEtiqueta = (tipo) => {
+      switch (tipo) {
+        case 'perfumes': return 'Tamaño'
+        case 'juguetes': return 'Presentación'
+        default: return 'Talla'
+      }
+    }
     
     let mensaje = `¡Hola! 👋\n\nMe interesa este producto:\n\n`
     mensaje += `📦 *${producto.nombre}*\n`
     if (variante) {
-      if (esRopa) {
+      if (tipoProducto === 'ropa') {
         mensaje += `📏 Talla: ${variante.talla}\n`
         if (variante.color && variante.color !== '') {
           mensaje += `🎨 Color: ${variante.color}\n`
         }
       } else {
-        mensaje += `📏 ${variante.talla}\n`
+        mensaje += `📦 ${getEtiqueta(tipoProducto)}: ${variante.talla}\n`
       }
     }
     if (descuento > 0) {
@@ -332,9 +344,9 @@ export default function PaginaCatalogo() {
         </div>
 
         {/* Categorías (solo si no es "todos") - Mejorado */}
-        {tipoActivo !== 'todos' && CATEGORIAS_POR_TIPO[tipoActivo] && (
+        {tipoActivo !== 'todos' && CATEGORIAS_CATALOGO[tipoActivo] && (
           <div className="flex gap-2 px-4 pb-4 overflow-x-auto no-scrollbar">
-            {CATEGORIAS_POR_TIPO[tipoActivo].map((cat, idx) => (
+            {CATEGORIAS_CATALOGO[tipoActivo].map((cat, idx) => (
               <button
                 key={cat.valor}
                 onClick={() => setCategoriaActiva(cat.valor)}
@@ -443,6 +455,8 @@ export default function PaginaCatalogo() {
               const agotado = stockTotal === 0
               const descuento = producto.descuento || 0
               const precioConDescuento = descuento > 0 ? precioMinimo * (1 - descuento / 100) : precioMinimo
+              const ventasProducto = ventasPorProducto[producto.id] || 0
+              const esMasVendido = ventasProducto >= 3 // Al menos 3 ventas
 
               return (
                 <div
@@ -462,7 +476,8 @@ export default function PaginaCatalogo() {
                     "relative aspect-[3/4] rounded-2xl overflow-hidden shadow-md transition-all duration-300",
                     "bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600",
                     "group-active:scale-95",
-                    descuento > 0 && !agotado && "ring-2 ring-red-500 animate-glow"
+                    descuento > 0 && !agotado && "ring-2 ring-red-500 animate-glow",
+                    esMasVendido && !descuento && !agotado && "ring-2 ring-yellow-400"
                   )}>
                     {/* Imagen */}
                     {imagenes.length > 0 ? (
@@ -483,11 +498,17 @@ export default function PaginaCatalogo() {
                     {/* Overlay con gradiente */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
                     
-                    {/* Badge de descuento o estado */}
+                    {/* Badge de descuento, más vendido o estado */}
                     {descuento > 0 && !agotado ? (
                       <div className="absolute top-2 left-2 animate-float">
                         <span className="px-2.5 py-1 bg-gradient-to-r from-red-500 to-orange-500 text-white text-xs font-black rounded-full shadow-lg flex items-center gap-1">
                           <span className="animate-pulse">🔥</span> -{descuento}%
+                        </span>
+                      </div>
+                    ) : esMasVendido && !agotado ? (
+                      <div className="absolute top-2 left-2 animate-float">
+                        <span className="px-2.5 py-1 bg-gradient-to-r from-yellow-400 to-amber-500 text-white text-xs font-black rounded-full shadow-lg flex items-center gap-1">
+                          ⭐ Top
                         </span>
                       </div>
                     ) : agotado ? (

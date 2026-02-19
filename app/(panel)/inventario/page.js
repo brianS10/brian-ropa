@@ -37,19 +37,54 @@ export default function PaginaInventario() {
     return () => clearTimeout(temporizador)
   }, [busqueda, buscarProductos, obtenerProductos])
 
-  // Eliminar producto
+  // Obtener etiqueta según tipo de producto
+  const obtenerEtiquetaTipo = (tipoProducto) => {
+    switch (tipoProducto) {
+      case 'perfumes': return 'Tamaño'
+      case 'juguetes': return 'Opción'
+      default: return 'Talla'
+    }
+  }
+
+  // Eliminar producto (con limpieza de datos relacionados)
   const eliminarProducto = async (productoId, nombreProducto) => {
     if (!confirm(`¿Eliminar "${nombreProducto}" y todas sus variantes?`)) return
     
     if (!estaConfigurado() || !supabase) return
 
     try {
-      const { error } = await supabase
-        .from('productos')
-        .delete()
-        .eq('id', productoId)
+      // 1. Primero verificar si tiene ventas asociadas
+      const { data: detallesVenta } = await supabase
+        .from('detalles_venta')
+        .select('id, variante_id')
+        .in('variante_id', 
+          productos.find(p => p.id === productoId)?.variantes_producto?.map(v => v.id) || []
+        )
+      
+      if (detallesVenta && detallesVenta.length > 0) {
+        // Si tiene ventas, solo desactivamos el producto
+        const { error } = await supabase
+          .from('productos')
+          .update({ estado: false, nombre: `[ELIMINADO] ${nombreProducto}` })
+          .eq('id', productoId)
+        
+        if (error) throw error
+        alert('El producto tenía ventas registradas. Se ha desactivado en lugar de eliminarse.')
+      } else {
+        // 2. Eliminar variantes primero
+        await supabase
+          .from('variantes_producto')
+          .delete()
+          .eq('producto_id', productoId)
 
-      if (error) throw error
+        // 3. Luego eliminar el producto
+        const { error } = await supabase
+          .from('productos')
+          .delete()
+          .eq('id', productoId)
+
+        if (error) throw error
+      }
       
       obtenerProductos() // Recargar lista
     } catch (error) {
@@ -207,7 +242,9 @@ export default function PaginaInventario() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-slate-100 dark:border-slate-700">
-                      <th className="text-left py-2 text-slate-500 font-medium">Talla</th>
+                      <th className="text-left py-2 text-slate-500 font-medium">
+                        {obtenerEtiquetaTipo(producto.tipo_producto)}
+                      </th>
                       <th className="text-left py-2 text-slate-500 font-medium">Color</th>
                       <th className="text-right py-2 text-slate-500 font-medium">Stock</th>
                       <th className="text-right py-2 text-slate-500 font-medium">Precio</th>

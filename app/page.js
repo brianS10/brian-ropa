@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Store, ShoppingBag } from "lucide-react";
+import { WHATSAPP_VENDEDOR, NOMBRE_TIENDA } from "@/lib/constantes";
 
 /**
  * Página de Inicio - Redirige al catálogo
@@ -14,7 +15,7 @@ export default function PaginaInicio() {
           <span className="text-5xl">👖</span>
         </div>
         <h1 className="text-3xl font-black text-slate-900 dark:text-white mb-2">
-          Pantalones de Calidad
+          {NOMBRE_TIENDA}
         </h1>
         <p className="text-slate-500 dark:text-slate-400">
           Los mejores precios del mercado
@@ -38,7 +39,7 @@ export default function PaginaInicio() {
 
       {/* WhatsApp flotante */}
       <a
-        href="https://wa.me/5215582258230?text=¡Hola!%20Quiero%20información%20sobre%20los%20pantalones"
+        href={`https://wa.me/${WHATSAPP_VENDEDOR}?text=¡Hola!%20Quiero%20información%20sobre%20los%20productos`}
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-6 right-6 w-16 h-16 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-xl shadow-green-500/40 flex items-center justify-center transition-all hover:scale-110"

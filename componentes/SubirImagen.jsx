@@ -178,26 +178,45 @@ export default function SubirImagen({
 
         {/* Botón para agregar */}
         {imagenes.length < maxImagenes && (
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
-            disabled={subiendo}
-            className={cn(
-              'aspect-square rounded-lg border-2 border-dashed flex flex-col items-center justify-center gap-1 transition-colors',
-              subiendo 
-                ? 'border-blue-300 bg-blue-50 cursor-wait'
-                : 'border-slate-300 hover:border-blue-500 hover:bg-blue-50 dark:border-slate-600 dark:hover:border-blue-500'
-            )}
-          >
+          <div className="aspect-square rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-600 overflow-hidden">
             {subiendo ? (
-              <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
+              <div className="w-full h-full flex flex-col items-center justify-center gap-1 bg-blue-50 dark:bg-blue-900/20">
+                <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
+                <span className="text-xs text-blue-500">Subiendo...</span>
+              </div>
             ) : (
-              <>
-                <Upload className="w-6 h-6 text-slate-400" />
-                <span className="text-xs text-slate-500">Agregar</span>
-              </>
+              <div className="w-full h-full flex">
+                {/* Botón cámara */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (inputRef.current) {
+                      inputRef.current.setAttribute('capture', 'environment')
+                      inputRef.current.click()
+                    }
+                  }}
+                  className="flex-1 flex flex-col items-center justify-center gap-1 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors border-r border-dashed border-slate-300 dark:border-slate-600"
+                >
+                  <span className="text-xl">📷</span>
+                  <span className="text-[10px] text-slate-500">Cámara</span>
+                </button>
+                {/* Botón galería */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (inputRef.current) {
+                      inputRef.current.removeAttribute('capture')
+                      inputRef.current.click()
+                    }
+                  }}
+                  className="flex-1 flex flex-col items-center justify-center gap-1 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                >
+                  <Upload className="w-5 h-5 text-slate-400" />
+                  <span className="text-[10px] text-slate-500">Galería</span>
+                </button>
+              </div>
             )}
-          </button>
+          </div>
         )}
       </div>
 
@@ -218,7 +237,7 @@ export default function SubirImagen({
 
       {/* Ayuda */}
       <p className="text-xs text-slate-500">
-        La primera imagen será la principal. Formatos: JPG, PNG. Máximo 5MB.
+        📸 Toma fotos o sube desde galería. La primera será la principal. Máx 5MB c/u.
       </p>
     </div>
   )

@@ -14,13 +14,8 @@ const urlsToCache = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Cache abierto')
-        return cache.addAll(urlsToCache)
-      })
-      .catch((err) => {
-        console.log('Error al cachear:', err)
-      })
+      .then((cache) => cache.addAll(urlsToCache))
+      .catch(() => {})
   )
   // Activar inmediatamente
   self.skipWaiting()
@@ -33,7 +28,6 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
-            console.log('Borrando cache viejo:', cacheName)
             return caches.delete(cacheName)
           }
         })

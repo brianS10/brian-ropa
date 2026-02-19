@@ -32,6 +32,15 @@ export default function PaginaHistorial() {
     tarjeta: '💳 Tarjeta',
   }
 
+  // Obtener etiqueta corta según tipo de producto
+  const getEtiquetaCorta = (tipoProducto) => {
+    switch (tipoProducto) {
+      case 'perfumes': return 'Tam'
+      case 'juguetes': return 'Op'
+      default: return 'T'
+    }
+  }
+
   return (
     <div className="p-4">
       {/* Encabezado */}
@@ -91,25 +100,28 @@ export default function PaginaHistorial() {
                     Productos vendidos:
                   </p>
                   <ul className="space-y-2">
-                    {venta.detalle_venta?.map((detalle) => (
-                      <li 
-                        key={detalle.id}
-                        className="flex items-center justify-between text-sm"
-                      >
-                        <span className="text-slate-700 dark:text-slate-300">
-                          {detalle.variantes_producto?.productos?.nombre || 'Producto'} 
-                          <span className="text-slate-500 ml-1">
-                            (T:{detalle.variantes_producto?.talla})
+                    {venta.detalle_venta?.map((detalle) => {
+                      const tipoProducto = detalle.variantes_producto?.productos?.tipo_producto || 'ropa'
+                      return (
+                        <li 
+                          key={detalle.id}
+                          className="flex items-center justify-between text-sm"
+                        >
+                          <span className="text-slate-700 dark:text-slate-300">
+                            {detalle.variantes_producto?.productos?.nombre || 'Producto'} 
+                            <span className="text-slate-500 ml-1">
+                              ({getEtiquetaCorta(tipoProducto)}:{detalle.variantes_producto?.talla})
+                            </span>
+                            <span className="text-slate-400 ml-2">
+                              x{detalle.cantidad}
+                            </span>
                           </span>
-                          <span className="text-slate-400 ml-2">
-                            x{detalle.cantidad}
+                          <span className="font-medium text-slate-900 dark:text-white">
+                            {formatearMoneda(detalle.subtotal)}
                           </span>
-                        </span>
-                        <span className="font-medium text-slate-900 dark:text-white">
-                          {formatearMoneda(detalle.subtotal)}
-                        </span>
-                      </li>
-                    ))}
+                        </li>
+                      )
+                    })}
                   </ul>
                 </div>
               )}

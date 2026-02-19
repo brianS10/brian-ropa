@@ -27,6 +27,24 @@ const TIPOS_FILTRO = [
   { valor: 'juguetes', etiqueta: 'Juguetes', emoji: '🧸' },
 ]
 
+// Obtener etiqueta según tipo de producto
+const obtenerEtiquetaTipo = (tipoProducto) => {
+  switch (tipoProducto) {
+    case 'perfumes': return 'Tamaño'
+    case 'juguetes': return 'Opción'
+    default: return 'Talla'
+  }
+}
+
+// Etiqueta plural
+const obtenerEtiquetaPlural = (tipoProducto) => {
+  switch (tipoProducto) {
+    case 'perfumes': return 'tamaños'
+    case 'juguetes': return 'opciones'
+    default: return 'tallas'
+  }
+}
+
 export default function PaginaVentaRapida() {
   const [productos, setProductos] = useState([])
   const [cargando, setCargando] = useState(true)
@@ -328,7 +346,7 @@ export default function PaginaVentaRapida() {
                       {producto.nombre}
                     </h3>
                     <p className="text-xs text-slate-500">
-                      {variantes.length} tallas · {stockTotal} en stock
+                      {variantes.length} {obtenerEtiquetaPlural(producto.tipo_producto)} · {stockTotal} en stock
                     </p>
                     {stockTotal === 0 && (
                       <span className="text-xs text-red-500 font-medium">⚠ Agotado</span>

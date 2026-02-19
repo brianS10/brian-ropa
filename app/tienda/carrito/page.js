@@ -13,11 +13,9 @@ import { ArrowLeft, Minus, Plus, Trash2, ShoppingBag, MessageCircle } from 'luci
 import { usarCarritoCliente } from '@/hooks/usarCarritoCliente'
 import { usarPedidos } from '@/hooks/usarPedidos'
 import { formatearMoneda } from '@/lib/utilidades'
+import { WHATSAPP_VENDEDOR } from '@/lib/constantes'
 import BotonPrimario from '@/componentes/ui/BotonPrimario'
 import EntradaTexto from '@/componentes/ui/EntradaTexto'
-
-// Número de WhatsApp del vendedor (tu hermano)
-const WHATSAPP_VENDEDOR = '5215582258230' // México: 521 + número
 
 export default function PaginaCarrito() {
   const router = useRouter()
