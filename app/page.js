@@ -12,27 +12,16 @@ import SplashScreen from "@/componentes/SplashScreen";
  */
 export default function PaginaInicio() {
   const [mostrarSplash, setMostrarSplash] = useState(true)
-  const [yaVisto, setYaVisto] = useState(false)
-
-  useEffect(() => {
-    // Verificar si ya vio el splash en esta sesión
-    const splashVisto = sessionStorage.getItem('splashVisto')
-    if (splashVisto) {
-      setMostrarSplash(false)
-      setYaVisto(true)
-    }
-  }, [])
 
   const handleSplashFinish = () => {
     setMostrarSplash(false)
-    sessionStorage.setItem('splashVisto', 'true')
   }
 
   return (
     <>
-      {/* Splash Screen - solo la primera vez */}
-      {mostrarSplash && !yaVisto && (
-        <SplashScreen onFinish={handleSplashFinish} duracion={2500} />
+      {/* Splash Screen - cada vez que carga */}
+      {mostrarSplash && (
+        <SplashScreen onFinish={handleSplashFinish} duracion={2000} />
       )}
     <main className="flex min-h-screen flex-col items-center justify-center p-6 bg-gradient-to-b from-blue-50 to-white dark:from-slate-900 dark:to-slate-800">
       {/* Logo y Título */}

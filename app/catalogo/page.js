@@ -58,16 +58,8 @@ export default function PaginaCatalogo() {
   const [ordenActivo, setOrdenActivo] = useState('destacados')
   const [mostrarOrden, setMostrarOrden] = useState(false)
   
-  // Splash screen cuando entra directo al catálogo
-  const [mostrarSplash, setMostrarSplash] = useState(false)
-
-  // Verificar si mostrar splash (solo si entra directo al catálogo)
-  useEffect(() => {
-    const splashVisto = sessionStorage.getItem('splashVisto')
-    if (!splashVisto) {
-      setMostrarSplash(true)
-    }
-  }, [])
+  // Splash screen - siempre al cargar
+  const [mostrarSplash, setMostrarSplash] = useState(true)
 
   // Cuando se abre un producto, esperar un momento antes de permitir abrir galería
   useEffect(() => {
@@ -293,16 +285,14 @@ export default function PaginaCatalogo() {
 
   const handleSplashFinish = useCallback(() => {
     setMostrarSplash(false)
-    sessionStorage.setItem('splashVisto', 'true')
   }, [])
 
   return (
     <>
-      {/* Splash Screen - DESACTIVADO TEMPORALMENTE
+      {/* Splash Screen - cada vez que carga */}
       {mostrarSplash && (
-        <SplashScreen onFinish={handleSplashFinish} duracion={2000} />
+        <SplashScreen onFinish={handleSplashFinish} duracion={1500} />
       )}
-      */}
       
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
       {/* Header */}
