@@ -1,8 +1,8 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Sistema de Inventario | Gestión de Ventas",
-  description: "Sistema de gestión de ventas e inventario para negocios de ropa",
+  title: "Productos Sanchez | Ropa, Perfumes y Juguetes",
+  description: "Tienda de ropa, perfumes y juguetes - Los mejores precios en Productos Sanchez",
   manifest: "/manifest.json",
 };
 
@@ -18,7 +18,8 @@ export default function LayoutRaiz({ children }) {
   return (
     <html lang="es" suppressHydrationWarning>
       <head>
-        <link rel="apple-touch-icon" href="/icono-192.svg" />
+        <link rel="icon" href="/logo.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/logo.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <script
           dangerouslySetInnerHTML={{

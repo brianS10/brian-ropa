@@ -1,24 +1,54 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import Link from "next/link";
-import { Store, ShoppingBag } from "lucide-react";
-import { WHATSAPP_VENDEDOR, NOMBRE_TIENDA } from "@/lib/constantes";
+import { ShoppingBag } from "lucide-react";
+import { WHATSAPP_VENDEDOR, NOMBRE_TIENDA, LOGO_TIENDA } from "@/lib/constantes";
+import SplashScreen from "@/componentes/SplashScreen";
 
 /**
- * Página de Inicio - Redirige al catálogo
+ * Página de Inicio - Productos Sanchez
  * El admin está oculto para los clientes
  */
 export default function PaginaInicio() {
+  const [mostrarSplash, setMostrarSplash] = useState(true)
+  const [yaVisto, setYaVisto] = useState(false)
+
+  useEffect(() => {
+    // Verificar si ya vio el splash en esta sesión
+    const splashVisto = sessionStorage.getItem('splashVisto')
+    if (splashVisto) {
+      setMostrarSplash(false)
+      setYaVisto(true)
+    }
+  }, [])
+
+  const handleSplashFinish = () => {
+    setMostrarSplash(false)
+    sessionStorage.setItem('splashVisto', 'true')
+  }
+
   return (
+    <>
+      {/* Splash Screen - solo la primera vez */}
+      {mostrarSplash && !yaVisto && (
+        <SplashScreen onFinish={handleSplashFinish} duracion={2500} />
+      )}
     <main className="flex min-h-screen flex-col items-center justify-center p-6 bg-gradient-to-b from-blue-50 to-white dark:from-slate-900 dark:to-slate-800">
       {/* Logo y Título */}
       <div className="text-center mb-10">
-        <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-500/30">
-          <span className="text-5xl">👖</span>
+        <div className="w-32 h-32 mx-auto mb-6 animate-float">
+          <img 
+            src={LOGO_TIENDA} 
+            alt={NOMBRE_TIENDA}
+            className="w-full h-full object-contain drop-shadow-xl"
+          />
         </div>
         <h1 className="text-3xl font-black text-slate-900 dark:text-white mb-2">
           {NOMBRE_TIENDA}
         </h1>
         <p className="text-slate-500 dark:text-slate-400">
-          Los mejores precios del mercado
+          Ropa, perfumes y juguetes 🛒
         </p>
       </div>
 
@@ -33,7 +63,7 @@ export default function PaginaInicio() {
         </Link>
         
         <p className="text-center text-sm text-slate-400 mt-4">
-          ¡Explora nuestros productos! 🛒
+          ¡Los mejores precios! 💰
         </p>
       </div>
 
@@ -62,5 +92,6 @@ export default function PaginaInicio() {
         v1.0.0
       </p>
     </main>
+    </>
   );
 }

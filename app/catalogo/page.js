@@ -18,9 +18,10 @@ import { useEffect, useState } from 'react'
 import { Search, X, MessageCircle, Share2, SlidersHorizontal, ChevronDown, Sparkles, TrendingDown, Clock, Star, TrendingUp } from 'lucide-react'
 import { supabase, estaConfigurado } from '@/lib/base_datos/cliente_supabase'
 import { formatearMoneda, cn } from '@/lib/utilidades'
-import { WHATSAPP_VENDEDOR, NOMBRE_TIENDA, CATEGORIAS_CATALOGO } from '@/lib/constantes'
+import { WHATSAPP_VENDEDOR, NOMBRE_TIENDA, CATEGORIAS_CATALOGO, LOGO_TIENDA } from '@/lib/constantes'
 import ToggleTema from '@/componentes/ToggleTema'
 import { SkeletonLista } from '@/componentes/Skeletons'
+import SplashScreen from '@/componentes/SplashScreen'
 
 // Opciones de ordenamiento
 const OPCIONES_ORDEN = [
@@ -55,6 +56,17 @@ export default function PaginaCatalogo() {
   // Ordenamiento - Por defecto "destacados" para mostrar los más vendidos primero
   const [ordenActivo, setOrdenActivo] = useState('destacados')
   const [mostrarOrden, setMostrarOrden] = useState(false)
+  
+  // Splash screen cuando entra directo al catálogo
+  const [mostrarSplash, setMostrarSplash] = useState(false)
+
+  // Verificar si mostrar splash (solo si entra directo al catálogo)
+  useEffect(() => {
+    const splashVisto = sessionStorage.getItem('splashVisto')
+    if (!splashVisto) {
+      setMostrarSplash(true)
+    }
+  }, [])
 
   // Obtener categorías según el tipo seleccionado
   const categoriasDisponibles = CATEGORIAS_CATALOGO[tipoActivo] || CATEGORIAS_CATALOGO.todos
@@ -261,7 +273,18 @@ export default function PaginaCatalogo() {
     }
   }
 
+  const handleSplashFinish = () => {
+    setMostrarSplash(false)
+    sessionStorage.setItem('splashVisto', 'true')
+  }
+
   return (
+    <>
+      {/* Splash Screen - solo si entra directo */}
+      {mostrarSplash && (
+        <SplashScreen onFinish={handleSplashFinish} duracion={2000} />
+      )}
+      
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-b border-slate-200 dark:border-slate-700 shadow-sm">
@@ -276,11 +299,11 @@ export default function PaginaCatalogo() {
                 tipoActivo === 'juguetes' ? 'from-yellow-500 to-orange-500 shadow-yellow-500/30' :
                 'from-purple-500 to-blue-500 shadow-purple-500/30'
               )}>
-                <span className="text-3xl">
-                  {tipoActivo === 'ropa' ? '👖' : 
-                   tipoActivo === 'perfumes' ? '🧴' : 
-                   tipoActivo === 'juguetes' ? '🧸' : '🛒'}
-                </span>
+                <img 
+                  src={LOGO_TIENDA} 
+                  alt={NOMBRE_TIENDA}
+                  className="w-10 h-10 object-contain"
+                />
               </div>
               <div>
                 <h1 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
@@ -892,5 +915,6 @@ export default function PaginaCatalogo() {
         .animate-slide-up { animation: slide-up 0.3s ease-out; }
       `}</style>
     </div>
+    </>
   )
 }
