@@ -6,12 +6,18 @@
 
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { NOMBRE_TIENDA, LOGO_TIENDA } from '@/lib/constantes'
 
 export default function SplashScreen({ onFinish, duracion = 2000 }) {
   const [animando, setAnimando] = useState(true)
   const [saliendo, setSaliendo] = useState(false)
+  const onFinishRef = useRef(onFinish)
+  
+  // Mantener referencia actualizada sin causar re-renders
+  useEffect(() => {
+    onFinishRef.current = onFinish
+  }, [onFinish])
 
   useEffect(() => {
     // Después de la duración, iniciar animación de salida
@@ -20,12 +26,12 @@ export default function SplashScreen({ onFinish, duracion = 2000 }) {
       // Esperar que termine la animación de salida
       setTimeout(() => {
         setAnimando(false)
-        onFinish?.()
+        onFinishRef.current?.()
       }, 500)
     }, duracion)
 
     return () => clearTimeout(timer)
-  }, [duracion, onFinish])
+  }, [duracion]) // Solo depende de duracion
 
   if (!animando) return null
 

@@ -14,7 +14,7 @@
 
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Search, X, MessageCircle, Share2, SlidersHorizontal, ChevronDown, Sparkles, TrendingDown, Clock, Star, TrendingUp } from 'lucide-react'
 import { supabase, estaConfigurado } from '@/lib/base_datos/cliente_supabase'
 import { formatearMoneda, cn } from '@/lib/utilidades'
@@ -52,6 +52,7 @@ export default function PaginaCatalogo() {
   const [tallaSeleccionada, setTallaSeleccionada] = useState(null)
   const [galeriaAbierta, setGaleriaAbierta] = useState(false)
   const [imagenGaleriaActiva, setImagenGaleriaActiva] = useState(0)
+  const [modalListo, setModalListo] = useState(false) // Evita clicks accidentales al abrir
   
   // Ordenamiento - Por defecto "destacados" para mostrar los más vendidos primero
   const [ordenActivo, setOrdenActivo] = useState('destacados')
@@ -67,6 +68,15 @@ export default function PaginaCatalogo() {
       setMostrarSplash(true)
     }
   }, [])
+
+  // Cuando se abre un producto, esperar un momento antes de permitir abrir galería
+  useEffect(() => {
+    if (productoSeleccionado) {
+      setModalListo(false)
+      const timer = setTimeout(() => setModalListo(true), 300)
+      return () => clearTimeout(timer)
+    }
+  }, [productoSeleccionado])
 
   // Obtener categorías según el tipo seleccionado
   const categoriasDisponibles = CATEGORIAS_CATALOGO[tipoActivo] || CATEGORIAS_CATALOGO.todos
@@ -273,17 +283,26 @@ export default function PaginaCatalogo() {
     }
   }
 
-  const handleSplashFinish = () => {
+  // Función para cerrar el modal correctamente
+  const cerrarModal = useCallback(() => {
+    setProductoSeleccionado(null)
+    setGaleriaAbierta(false)
+    setTallaSeleccionada(null)
+    setModalListo(false)
+  }, [])
+
+  const handleSplashFinish = useCallback(() => {
     setMostrarSplash(false)
     sessionStorage.setItem('splashVisto', 'true')
-  }
+  }, [])
 
   return (
     <>
-      {/* Splash Screen - solo si entra directo */}
+      {/* Splash Screen - DESACTIVADO TEMPORALMENTE
       {mostrarSplash && (
         <SplashScreen onFinish={handleSplashFinish} duracion={2000} />
       )}
+      */}
       
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
       {/* Header */}
@@ -484,9 +503,12 @@ export default function PaginaCatalogo() {
               return (
                 <div
                   key={producto.id}
-                  onClick={() => {
-                    setProductoSeleccionado(producto)
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    // Resetear estados antes de abrir
+                    setGaleriaAbierta(false)
                     setTallaSeleccionada(null)
+                    setProductoSeleccionado(producto)
                   }}
                   className={cn(
                     "group cursor-pointer animate-stagger tap-feedback",
@@ -607,116 +629,122 @@ export default function PaginaCatalogo() {
 
       {/* Modal de producto - Mejorado para móvil */}
       {productoSeleccionado && (
-        <div className="fixed inset-0 z-50 flex items-end animate-fade-in">
-          {/* Overlay con blur */}
+        <div 
+          className="fixed inset-0 z-50 flex items-end"
+        >
+          {/* Overlay con blur - NO cierra al tocar */}
           <div 
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm" 
-            onClick={() => setProductoSeleccionado(null)} 
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
           />
           
           {/* Panel del producto */}
-          <div className="relative w-full bg-white dark:bg-slate-900 rounded-t-[2rem] max-h-[90vh] overflow-auto animate-slide-up shadow-2xl">
+          <div 
+            className="relative w-full bg-white dark:bg-slate-900 rounded-t-[2rem] max-h-[90vh] overflow-auto animate-slide-up shadow-2xl"
+          >
             {/* Handle para arrastrar */}
             <div className="sticky top-0 z-20 pt-3 pb-2 bg-white dark:bg-slate-900">
               <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-full mx-auto" />
             </div>
             
-            {/* Header con imagen grande */}
-            <div className="relative">
-              {(() => {
-                const imgs = obtenerImagenes(productoSeleccionado)
-                const descuento = productoSeleccionado.descuento || 0
-                
-                return (
-                  <div 
-                    onClick={() => {
-                      if (imgs.length > 0) {
-                        setGaleriaAbierta(true)
-                        setImagenGaleriaActiva(0)
-                      }
-                    }}
-                    className="relative aspect-[4/3] mx-4 rounded-2xl overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 cursor-pointer active:scale-[0.98] transition-transform"
-                  >
-                    {imgs.length > 0 ? (
-                      <>
-                        <img src={imgs[0]} alt="" className="w-full h-full object-cover" />
-                        {imgs.length > 1 && (
-                          <div className="absolute bottom-3 right-3 bg-black/70 backdrop-blur-sm text-white text-sm px-3 py-1.5 rounded-full font-bold flex items-center gap-1">
-                            📷 {imgs.length} fotos
+            {/* Header con info del producto */}
+            <div className="p-4 pb-0">
+              {/* Fila: Imagen pequeña + Info básica */}
+              <div className="flex gap-4">
+                {/* Imagen compacta */}
+                {(() => {
+                  const imgs = obtenerImagenes(productoSeleccionado)
+                  const descuento = productoSeleccionado.descuento || 0
+                  
+                  return (
+                    <div 
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        if (imgs.length > 0 && modalListo) {
+                          setGaleriaAbierta(true)
+                          setImagenGaleriaActiva(0)
+                        }
+                      }}
+                      className="relative w-28 h-28 flex-shrink-0 rounded-2xl overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 cursor-pointer active:scale-95 transition-transform shadow-lg"
+                    >
+                      {imgs.length > 0 ? (
+                        <>
+                          <img src={imgs[0]} alt="" className="w-full h-full object-cover" />
+                          {imgs.length > 1 && (
+                            <div className="absolute bottom-1 right-1 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">
+                              +{imgs.length - 1}
+                            </div>
+                          )}
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/20 transition-colors">
+                            <span className="text-white text-lg opacity-0 hover:opacity-100">🔍</span>
                           </div>
-                        )}
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 active:opacity-100 bg-black/20 transition-opacity">
-                          <span className="text-white text-2xl bg-black/50 p-3 rounded-full">🔍</span>
+                        </>
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span className="text-4xl">
+                            {(productoSeleccionado.tipo_producto || 'ropa') === 'ropa' ? '👖' : 
+                             productoSeleccionado.tipo_producto === 'perfumes' ? '🧴' : '🧸'}
+                          </span>
                         </div>
-                      </>
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-6xl">
-                          {(productoSeleccionado.tipo_producto || 'ropa') === 'ropa' ? '👖' : 
-                           productoSeleccionado.tipo_producto === 'perfumes' ? '🧴' : '🧸'}
-                        </span>
-                      </div>
-                    )}
+                      )}
+                      
+                      {/* Badge de descuento */}
+                      {descuento > 0 && (
+                        <div className="absolute top-1 left-1">
+                          <span className="px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-black rounded-full">
+                            -{descuento}%
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })()}
+                
+                {/* Info del producto al lado de la imagen */}
+                <div className="flex-1 min-w-0">
+                  <h2 className="font-black text-slate-900 dark:text-white text-lg leading-tight mb-1 line-clamp-2">
+                    {productoSeleccionado.nombre}
+                  </h2>
+                  
+                  {/* Precio */}
+                  {(() => {
+                    const precioBase = tallaSeleccionada?.precio_venta || obtenerPrecioMinimo(productoSeleccionado.variantes_producto)
+                    const descuento = productoSeleccionado.descuento || 0
+                    const precioFinal = descuento > 0 ? precioBase * (1 - descuento / 100) : precioBase
                     
-                    {/* Badge de descuento */}
-                    {descuento > 0 && (
-                      <div className="absolute top-3 left-3 animate-float">
-                        <span className="px-3 py-1.5 bg-gradient-to-r from-red-500 to-orange-500 text-white text-sm font-black rounded-full shadow-lg flex items-center gap-1">
-                          🔥 -{descuento}% OFF
-                        </span>
+                    return (
+                      <div className="mb-2">
+                        {descuento > 0 ? (
+                          <div className="flex items-center gap-2">
+                            <span className="text-2xl font-black text-green-600">{formatearMoneda(precioFinal)}</span>
+                            <span className="text-sm text-slate-400 line-through">{formatearMoneda(precioBase)}</span>
+                          </div>
+                        ) : (
+                          <span className="text-2xl font-black text-blue-600">{formatearMoneda(precioBase)}</span>
+                        )}
                       </div>
-                    )}
-                  </div>
-                )
-              })()}
-              
-              {/* Botones flotantes - Cerrar y Compartir */}
-              <div className="absolute top-2 right-6 flex items-center gap-2">
+                    )
+                  })()}
+                  
+                  {/* Descripción corta */}
+                  {productoSeleccionado.descripcion && (
+                    <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2">
+                      {productoSeleccionado.descripcion}
+                    </p>
+                  )}
+                </div>
+                
+                {/* Botón cerrar */}
                 <button
-                  onClick={(e) => compartirProducto(productoSeleccionado, e)}
-                  className="w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center active:scale-90 transition-transform"
+                  onClick={cerrarModal}
+                  className="w-8 h-8 flex-shrink-0 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center active:scale-90 transition-transform"
                 >
-                  <Share2 className="w-5 h-5 text-white" />
-                </button>
-                <button
-                  onClick={() => setProductoSeleccionado(null)}
-                  className="w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center active:scale-90 transition-transform"
-                >
-                  <X className="w-5 h-5 text-white" />
+                  <X className="w-5 h-5 text-slate-500" />
                 </button>
               </div>
             </div>
 
-            {/* Info del producto */}
-            <div className="p-4 pt-3">
-              <h2 className="font-black text-slate-900 dark:text-white text-xl leading-tight mb-2">
-                {productoSeleccionado.nombre}
-              </h2>
-              
-              {/* Precio con descuento */}
-              {(() => {
-                const precioBase = tallaSeleccionada?.precio_venta || obtenerPrecioMinimo(productoSeleccionado.variantes_producto)
-                const descuento = productoSeleccionado.descuento || 0
-                const precioFinal = descuento > 0 ? precioBase * (1 - descuento / 100) : precioBase
-                
-                return descuento > 0 ? (
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className="text-2xl font-black text-green-500">
-                      {formatearMoneda(precioFinal)}
-                    </span>
-                    <span className="text-lg text-slate-400 line-through">
-                      {formatearMoneda(precioBase)}
-                    </span>
-                    <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-xs font-bold rounded-lg">
-                      Ahorras {formatearMoneda(precioBase - precioFinal)}
-                    </span>
-                  </div>
-                ) : (
-                  <p className="text-2xl font-black text-green-500 mb-4">
-                    {formatearMoneda(precioBase)}
-                  </p>
-                )
-              })()}
+            {/* Contenido del modal */}
+            <div className="p-4 pt-2">
               {/* Verificar si hay stock */}
               {(() => {
                 const stockProducto = productoSeleccionado.variantes_producto?.reduce((acc, v) => acc + v.stock_actual, 0) || 0
@@ -829,7 +857,7 @@ export default function PaginaCatalogo() {
       </div>
 
       {/* GALERÍA DE FOTOS A PANTALLA COMPLETA */}
-      {galeriaAbierta && productoSeleccionado && (
+      {galeriaAbierta && productoSeleccionado && modalListo && (
         <div className="fixed inset-0 z-[100] bg-black flex flex-col">
           {/* Header de galería */}
           <div className="flex items-center justify-between p-4 bg-black/50">
