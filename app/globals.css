@@ -429,3 +429,334 @@ button, a {
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 16px);
 }
+
+/* ========================================
+   ANIMACIONES IMPRESIONANTES
+   ======================================== */
+
+/* Efecto de brillo que pasa por el elemento */
+@keyframes shine {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.animate-shine {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shine 2s ease-in-out infinite;
+}
+
+/* Efecto de resplandor pulsante */
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 5px currentColor, 0 0 10px currentColor, 0 0 15px currentColor;
+  }
+  50% {
+    box-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
+  }
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* Efecto de escala con rebote */
+@keyframes pop-in {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-pop-in {
+  animation: pop-in 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Efecto de flotación 3D */
+@keyframes float-3d {
+  0%, 100% {
+    transform: translateY(0) rotateX(0deg) rotateY(0deg);
+  }
+  25% {
+    transform: translateY(-10px) rotateX(5deg) rotateY(5deg);
+  }
+  50% {
+    transform: translateY(-5px) rotateX(0deg) rotateY(-5deg);
+  }
+  75% {
+    transform: translateY(-15px) rotateX(-5deg) rotateY(0deg);
+  }
+}
+
+.animate-float-3d {
+  animation: float-3d 4s ease-in-out infinite;
+  transform-style: preserve-3d;
+}
+
+/* Efecto de ondulación */
+@keyframes ripple {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+.animate-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-ripple::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+  animation: ripple 1.5s ease-out infinite;
+  pointer-events: none;
+}
+
+/* Efecto de shake/temblor */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.animate-shake {
+  animation: shake 0.6s ease-in-out;
+}
+
+/* Efecto de latido de corazón */
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.1); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.1); }
+  70% { transform: scale(1); }
+}
+
+.animate-heartbeat {
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+/* Efecto de entrada desde la izquierda */
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Efecto de entrada desde la derecha */
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Efecto de rotación con zoom */
+@keyframes rotate-zoom {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.1);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+.animate-rotate-zoom {
+  animation: rotate-zoom 3s ease-in-out infinite;
+}
+
+/* Efecto de neón parpadeante */
+@keyframes neon-flicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    text-shadow: 
+      0 0 4px #fff,
+      0 0 11px #fff,
+      0 0 19px #fff,
+      0 0 40px #0fa,
+      0 0 80px #0fa;
+  }
+  20%, 24%, 55% {
+    text-shadow: none;
+  }
+}
+
+.animate-neon {
+  animation: neon-flicker 1.5s infinite alternate;
+}
+
+/* Efecto de typing/escritura */
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes blink-cursor {
+  50% { border-color: transparent; }
+}
+
+.animate-typing {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 3px solid;
+  animation: 
+    typing 3s steps(30, end),
+    blink-cursor 0.75s step-end infinite;
+}
+
+/* Efecto de olas */
+@keyframes wave {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-5px) rotate(3deg); }
+  50% { transform: translateY(0) rotate(0deg); }
+  75% { transform: translateY(5px) rotate(-3deg); }
+}
+
+.animate-wave {
+  animation: wave 2s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+/* Efecto de rebote elástico */
+@keyframes elastic {
+  0% { transform: scale(0); }
+  55% { transform: scale(1.1); }
+  70% { transform: scale(0.95); }
+  85% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.animate-elastic {
+  animation: elastic 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Efecto de aparición escalonada para listas */
+@keyframes stagger-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-stagger {
+  animation: stagger-in 0.4s ease-out forwards;
+  opacity: 0;
+}
+
+/* Gradiente animado de fondo */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient-bg {
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  background-size: 400% 400%;
+  animation: gradient-shift 8s ease infinite;
+}
+
+/* Efecto de zoom suave al hover */
+.hover-zoom {
+  transition: transform 0.3s ease;
+}
+.hover-zoom:hover {
+  transform: scale(1.05);
+}
+
+/* Efecto de elevación al hover */
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+/* Efecto de borde animado */
+@keyframes border-dance {
+  0%, 100% { 
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+  }
+  50% { 
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0);
+  }
+}
+
+.animate-border-dance {
+  animation: border-dance 2s ease-in-out infinite;
+}
+
+/* Partículas flotantes de fondo */
+@keyframes float-particle {
+  0%, 100% {
+    transform: translateY(0) translateX(0) rotate(0deg);
+    opacity: 0.5;
+  }
+  25% {
+    transform: translateY(-20px) translateX(10px) rotate(90deg);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-40px) translateX(-10px) rotate(180deg);
+    opacity: 0.5;
+  }
+  75% {
+    transform: translateY(-20px) translateX(5px) rotate(270deg);
+    opacity: 1;
+  }
+}
+
+.animate-particle {
+  animation: float-particle 6s ease-in-out infinite;
+}
+
