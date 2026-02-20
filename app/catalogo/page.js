@@ -714,13 +714,6 @@ export default function PaginaCatalogo() {
                       </div>
                     )
                   })()}
-                  
-                  {/* Descripción corta */}
-                  {productoSeleccionado.descripcion && (
-                    <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2">
-                      {productoSeleccionado.descripcion}
-                    </p>
-                  )}
                 </div>
                 
                 {/* Botón cerrar */}
@@ -731,6 +724,15 @@ export default function PaginaCatalogo() {
                   <X className="w-5 h-5 text-slate-500" />
                 </button>
               </div>
+              
+              {/* Descripción completa (si existe) */}
+              {productoSeleccionado.descripcion && (
+                <div className="mt-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                  <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                    {productoSeleccionado.descripcion}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Contenido del modal */}
