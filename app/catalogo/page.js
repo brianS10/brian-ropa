@@ -182,8 +182,17 @@ export default function PaginaCatalogo() {
         coincideTipo = p.tipo_producto === tipoActivo
       }
       
-      // Filtro por categoría
-      const coincideCategoria = categoriaActiva === 'todos' || p.categoria === categoriaActiva
+      // Filtro por categoría (usando estructura de catálogo público)
+      let coincideCategoria = true
+      if (categoriaActiva !== 'todos') {
+        // Buscar la categoría activa en la estructura del catálogo
+        const categoriasCatalogo = CATEGORIAS_CATALOGO[tipoActivo] || [];
+        const catObj = categoriasCatalogo.find(cat => cat.valor === categoriaActiva);
+        const catFiltro = catObj ? catObj.etiqueta.toLowerCase().replace(/\s+/g, '') : categoriaActiva.toLowerCase().replace(/\s+/g, '');
+        const catProd = (p.categoria || '').toLowerCase().replace(/\s+/g, '');
+        const subcatProd = (p.subcategoria || '').toLowerCase().replace(/\s+/g, '');
+        coincideCategoria = catProd.includes(catFiltro) || subcatProd.includes(catFiltro);
+      }
       
       return coincideBusqueda && coincideTipo && coincideCategoria
     })
@@ -537,6 +546,7 @@ export default function PaginaCatalogo() {
                         src={imagenes[0]} 
                         alt={producto.nombre}
                         className="w-full h-full object-cover"
+                        style={{objectFit: 'contain'}} // Mostrar imagen completa
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-600 dark:to-slate-700">
@@ -586,45 +596,27 @@ export default function PaginaCatalogo() {
                       </div>
                     )}
 
-                    {/* Info del producto - Mejor legibilidad móvil */}
-                    <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-3">
-                      <h3 className="font-bold text-white text-base sm:text-sm leading-tight line-clamp-2 mb-1.5 drop-shadow-lg">
+                    {/* Info del producto - superpuesto sobre la imagen */}
+                    <div className="absolute bottom-0 left-0 right-0 px-3 py-2 bg-black/60 backdrop-blur-sm rounded-b-xl flex flex-col items-center">
+                      <h3 className="font-bold text-white text-base sm:text-sm leading-tight mb-1.5 text-center">
                         {producto.nombre}
                       </h3>
-                      
-                      {/* Precio - Más grande en móvil */}
                       <div className="flex items-end gap-2">
                         {descuento > 0 ? (
                           <>
-                            <span className="text-white/60 text-xs line-through">
+                            <span className="text-white/70 text-xs line-through">
                               {formatearMoneda(precioMinimo)}
                             </span>
-                            <span className="text-green-400 font-black text-xl sm:text-lg drop-shadow-lg">
+                            <span className="text-green-400 font-black text-xl sm:text-lg">
                               {formatearMoneda(precioConDescuento)}
                             </span>
                           </>
                         ) : (
-                          <span className="text-white font-black text-xl sm:text-lg drop-shadow-lg">
+                          <span className="text-white font-black text-xl sm:text-lg">
                             {formatearMoneda(precioMinimo)}
                           </span>
                         )}
                       </div>
-                      
-                      {/* Tallas disponibles - Más visibles en móvil */}
-                      {!agotado && tallasDisponibles.length > 0 && (producto.tipo_producto || 'ropa') === 'ropa' && (
-                        <div className="flex gap-1.5 mt-2.5 flex-wrap">
-                          {[...new Set(tallasDisponibles.map(v => v.talla))].slice(0, 5).map(talla => (
-                            <span key={talla} className="px-2 py-1 bg-white/25 backdrop-blur-sm text-white text-xs sm:text-[10px] font-semibold rounded-md">
-                              {talla}
-                            </span>
-                          ))}
-                          {[...new Set(tallasDisponibles.map(v => v.talla))].length > 5 && (
-                            <span className="px-2 py-1 bg-white/25 backdrop-blur-sm text-white text-xs sm:text-[10px] font-semibold rounded-md">
-                              +{[...new Set(tallasDisponibles.map(v => v.talla))].length - 5}
-                            </span>
-                          )}
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>

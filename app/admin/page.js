@@ -157,11 +157,7 @@ export default function PaginaAcceso() {
         </BotonPrimario>
       </div>
 
-      {/* Nota */}
-      <p className="mt-8 text-xs text-slate-500 text-center">
-        PIN por defecto: 1234<br/>
-        (Cámbialo en producción)
-      </p>
+
     </main>
   )
 }
