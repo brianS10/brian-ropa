@@ -185,7 +185,7 @@ export default function SubirImagen({
                 <span className="text-xs text-blue-500">Subiendo...</span>
               </div>
             ) : (
-              <div className="w-full h-full flex">
+              <div className="w-full h-full flex flex-col">
                 {/* Botón cámara */}
                 <button
                   type="button"
@@ -195,10 +195,10 @@ export default function SubirImagen({
                       inputRef.current.click()
                     }
                   }}
-                  className="flex-1 flex flex-col items-center justify-center gap-1 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors border-r border-dashed border-slate-300 dark:border-slate-600"
+                  className="flex-1 flex flex-col items-center justify-center gap-2 hover:bg-green-50 dark:hover:bg-green-900/20 active:bg-green-100 transition-colors border-b border-dashed border-slate-300 dark:border-slate-600"
                 >
-                  <span className="text-xl">📷</span>
-                  <span className="text-[10px] text-slate-500">Cámara</span>
+                  <span className="text-3xl">📷</span>
+                  <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Tomar Foto</span>
                 </button>
                 {/* Botón galería */}
                 <button
@@ -209,10 +209,10 @@ export default function SubirImagen({
                       inputRef.current.click()
                     }
                   }}
-                  className="flex-1 flex flex-col items-center justify-center gap-1 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                  className="flex-1 flex flex-col items-center justify-center gap-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 active:bg-blue-100 transition-colors"
                 >
-                  <Upload className="w-5 h-5 text-slate-400" />
-                  <span className="text-[10px] text-slate-500">Galería</span>
+                  <Upload className="w-8 h-8 text-blue-500" />
+                  <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Galería</span>
                 </button>
               </div>
             )}

@@ -54,12 +54,16 @@ export default function PaginaInventario() {
 
     try {
       // 1. Primero verificar si tiene ventas asociadas
-      const { data: detallesVenta } = await supabase
-        .from('detalles_venta')
-        .select('id, variante_id')
-        .in('variante_id', 
-          productos.find(p => p.id === productoId)?.variantes_producto?.map(v => v.id) || []
-        )
+      const variantesIds = productos.find(p => p.id === productoId)?.variantes_producto?.map(v => v.id) || []
+      
+      let detallesVenta = []
+      if (variantesIds.length > 0) {
+        const { data } = await supabase
+          .from('detalle_venta')
+          .select('id, variante_id')
+          .in('variante_id', variantesIds)
+        detallesVenta = data || []
+      }
       
       if (detallesVenta && detallesVenta.length > 0) {
         // Si tiene ventas, solo desactivamos el producto

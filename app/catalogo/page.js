@@ -14,8 +14,8 @@
 
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-import { Search, X, MessageCircle, Share2, SlidersHorizontal, ChevronDown, Sparkles, TrendingDown, Clock, Star, TrendingUp } from 'lucide-react'
+import { useEffect, useState, useCallback, useRef } from 'react'
+import { Search, X, MessageCircle, Share2, SlidersHorizontal, ChevronDown, Sparkles, TrendingDown, Clock, Star, TrendingUp, Copy, Check, QrCode } from 'lucide-react'
 import { supabase, estaConfigurado } from '@/lib/base_datos/cliente_supabase'
 import { formatearMoneda, cn } from '@/lib/utilidades'
 import { WHATSAPP_VENDEDOR, NOMBRE_TIENDA, CATEGORIAS_CATALOGO, LOGO_TIENDA } from '@/lib/constantes'
@@ -60,6 +60,12 @@ export default function PaginaCatalogo() {
   
   // Splash screen - siempre al cargar
   const [mostrarSplash, setMostrarSplash] = useState(true)
+  
+  // Modal de compartir
+  const [modalCompartir, setModalCompartir] = useState(false)
+  const [linkCopiado, setLinkCopiado] = useState(false)
+  const [mostrarQR, setMostrarQR] = useState(false)
+  const qrRef = useRef(null)
 
   // Cuando se abre un producto, esperar un momento antes de permitir abrir galería
   useEffect(() => {
@@ -258,21 +264,25 @@ export default function PaginaCatalogo() {
     }
   }
 
-  // Compartir catálogo
-  const compartirCatalogo = async () => {
-    const url = window.location.href
-    const texto = `¡Mira estos productos! 🛒\n${url}`
-    
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: NOMBRE_TIENDA, text: texto, url })
-      } catch (err) {
-        // Usuario canceló
-      }
-    } else {
-      navigator.clipboard.writeText(url)
-      alert('¡Link copiado!')
-    }
+  // Compartir catálogo - Abre modal con opciones
+  const compartirCatalogo = () => {
+    setModalCompartir(true)
+    setLinkCopiado(false)
+    setMostrarQR(false)
+  }
+
+  // Copiar link al portapapeles
+  const copiarLink = async () => {
+    const url = window.location.origin + '/catalogo'
+    await navigator.clipboard.writeText(url)
+    setLinkCopiado(true)
+    setTimeout(() => setLinkCopiado(false), 2000)
+  }
+
+  // Generar URL del QR usando API externa
+  const generarQRUrl = () => {
+    const url = encodeURIComponent(window.location.origin + '/catalogo')
+    return `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${url}`
   }
 
   // Función para cerrar el modal correctamente
@@ -302,7 +312,7 @@ export default function PaginaCatalogo() {
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
               <div className={cn(
-                'w-14 h-14 bg-gradient-to-br rounded-2xl flex items-center justify-center shadow-lg animate-float hover-lift',
+                'w-14 h-14 bg-gradient-to-br rounded-2xl flex items-center justify-center shadow-lg animate-float',
                 tipoActivo === 'ropa' ? 'from-blue-500 to-cyan-500 shadow-blue-500/30' :
                 tipoActivo === 'perfumes' ? 'from-pink-500 to-rose-500 shadow-pink-500/30' :
                 tipoActivo === 'juguetes' ? 'from-yellow-500 to-orange-500 shadow-yellow-500/30' :
@@ -311,13 +321,13 @@ export default function PaginaCatalogo() {
                 <img 
                   src={LOGO_TIENDA} 
                   alt={NOMBRE_TIENDA}
-                  className="w-10 h-10 object-contain animate-bounce-slow"
+                  className="w-10 h-10 object-contain"
                 />
               </div>
               <div>
                 <h1 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
                   {NOMBRE_TIENDA}
-                  <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-heartbeat"></span>
+                  <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                 </h1>
                 <p className="text-xs text-slate-500 dark:text-slate-400">✨ Catálogo actualizado</p>
               </div>
@@ -478,7 +488,7 @@ export default function PaginaCatalogo() {
             </a>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 gap-4 px-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 sm:gap-3 sm:px-0">
             {productosFiltrados.map((producto, index) => {
               const precioMinimo = obtenerPrecioMinimo(producto.variantes_producto)
               const tallasDisponibles = obtenerTallasDisponibles(producto.variantes_producto)
@@ -501,18 +511,18 @@ export default function PaginaCatalogo() {
                     setProductoSeleccionado(producto)
                   }}
                   className={cn(
-                    "group cursor-pointer animate-stagger tap-feedback hover-lift",
+                    "group cursor-pointer animate-stagger tap-feedback",
                     agotado && "opacity-50 grayscale"
                   )}
                   style={{ animationDelay: `${index * 0.05}s` }}
                 >
-                  {/* Tarjeta del producto */}
+                  {/* Tarjeta del producto - Más alta en móvil */}
                   <div className={cn(
-                    "relative aspect-[3/4] rounded-2xl overflow-hidden shadow-md transition-all duration-300",
+                    "relative aspect-[3/5] sm:aspect-[3/4] rounded-2xl overflow-hidden shadow-lg transition-all duration-300",
                     "bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600",
-                    "group-active:scale-95 group-hover:shadow-xl",
-                    descuento > 0 && !agotado && "ring-2 ring-red-500 animate-glow-pulse",
-                    esMasVendido && !descuento && !agotado && "ring-2 ring-yellow-400 animate-border-dance"
+                    "group-active:scale-95",
+                    descuento > 0 && !agotado && "ring-2 ring-red-500 animate-glow",
+                    esMasVendido && !descuento && !agotado && "ring-2 ring-yellow-400"
                   )}>
                     {/* Imagen */}
                     {imagenes.length > 0 ? (
@@ -533,77 +543,77 @@ export default function PaginaCatalogo() {
                     {/* Overlay con gradiente */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
                     
-                    {/* Badge de descuento, más vendido o estado */}
+                    {/* Badge de descuento, más vendido o estado - Más grande en móvil */}
                     {descuento > 0 && !agotado ? (
                       <div className="absolute top-2 left-2 animate-float">
-                        <span className="px-2.5 py-1 bg-gradient-to-r from-red-500 to-orange-500 text-white text-xs font-black rounded-full shadow-lg flex items-center gap-1">
+                        <span className="px-3 py-1.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-red-500 to-orange-500 text-white text-sm sm:text-xs font-black rounded-full shadow-lg flex items-center gap-1">
                           <span className="animate-pulse">🔥</span> -{descuento}%
                         </span>
                       </div>
                     ) : esMasVendido && !agotado ? (
                       <div className="absolute top-2 left-2 animate-float">
-                        <span className="px-2.5 py-1 bg-gradient-to-r from-yellow-400 to-amber-500 text-white text-xs font-black rounded-full shadow-lg flex items-center gap-1">
+                        <span className="px-3 py-1.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-yellow-400 to-amber-500 text-white text-sm sm:text-xs font-black rounded-full shadow-lg flex items-center gap-1">
                           ⭐ Top
                         </span>
                       </div>
                     ) : agotado ? (
                       <div className="absolute top-2 left-2">
-                        <span className="px-2 py-1 bg-slate-800/90 text-white text-xs font-bold rounded-full">
+                        <span className="px-3 py-1.5 sm:px-2 sm:py-1 bg-slate-800/90 text-white text-sm sm:text-xs font-bold rounded-full">
                           Agotado
                         </span>
                       </div>
                     ) : stockTotal <= 3 && stockTotal > 0 ? (
                       <div className="absolute top-2 left-2 animate-heartbeat">
-                        <span className="px-2 py-1 bg-orange-500 text-white text-xs font-bold rounded-full shadow-lg">
+                        <span className="px-3 py-1.5 sm:px-2 sm:py-1 bg-orange-500 text-white text-sm sm:text-xs font-bold rounded-full shadow-lg">
                           ¡Últimos {stockTotal}!
                         </span>
                       </div>
                     ) : null}
 
-                    {/* Cantidad de fotos */}
+                    {/* Cantidad de fotos - Más visible */}
                     {imagenes.length > 1 && (
                       <div className="absolute top-2 right-2">
-                        <span className="px-2 py-1 bg-black/60 text-white text-xs font-medium rounded-full backdrop-blur-sm">
+                        <span className="px-2.5 py-1.5 sm:px-2 sm:py-1 bg-black/60 text-white text-sm sm:text-xs font-medium rounded-full backdrop-blur-sm">
                           📷 {imagenes.length}
                         </span>
                       </div>
                     )}
 
-                    {/* Info del producto */}
-                    <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <h3 className="font-bold text-white text-sm leading-tight line-clamp-2 mb-1 drop-shadow-lg">
+                    {/* Info del producto - Mejor legibilidad móvil */}
+                    <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-3">
+                      <h3 className="font-bold text-white text-base sm:text-sm leading-tight line-clamp-2 mb-1.5 drop-shadow-lg">
                         {producto.nombre}
                       </h3>
                       
-                      {/* Precio */}
+                      {/* Precio - Más grande en móvil */}
                       <div className="flex items-end gap-2">
                         {descuento > 0 ? (
                           <>
-                            <span className="text-white/50 text-xs line-through">
+                            <span className="text-white/60 text-xs line-through">
                               {formatearMoneda(precioMinimo)}
                             </span>
-                            <span className="text-green-400 font-black text-lg drop-shadow-lg">
+                            <span className="text-green-400 font-black text-xl sm:text-lg drop-shadow-lg">
                               {formatearMoneda(precioConDescuento)}
                             </span>
                           </>
                         ) : (
-                          <span className="text-white font-black text-lg drop-shadow-lg">
+                          <span className="text-white font-black text-xl sm:text-lg drop-shadow-lg">
                             {formatearMoneda(precioMinimo)}
                           </span>
                         )}
                       </div>
                       
-                      {/* Tallas disponibles */}
+                      {/* Tallas disponibles - Más visibles en móvil */}
                       {!agotado && tallasDisponibles.length > 0 && (producto.tipo_producto || 'ropa') === 'ropa' && (
-                        <div className="flex gap-1 mt-2 flex-wrap">
-                          {[...new Set(tallasDisponibles.map(v => v.talla))].slice(0, 4).map(talla => (
-                            <span key={talla} className="px-1.5 py-0.5 bg-white/20 backdrop-blur-sm text-white text-[10px] font-medium rounded">
+                        <div className="flex gap-1.5 mt-2.5 flex-wrap">
+                          {[...new Set(tallasDisponibles.map(v => v.talla))].slice(0, 5).map(talla => (
+                            <span key={talla} className="px-2 py-1 bg-white/25 backdrop-blur-sm text-white text-xs sm:text-[10px] font-semibold rounded-md">
                               {talla}
                             </span>
                           ))}
-                          {[...new Set(tallasDisponibles.map(v => v.talla))].length > 4 && (
-                            <span className="px-1.5 py-0.5 bg-white/20 backdrop-blur-sm text-white text-[10px] font-medium rounded">
-                              +{[...new Set(tallasDisponibles.map(v => v.talla))].length - 4}
+                          {[...new Set(tallasDisponibles.map(v => v.talla))].length > 5 && (
+                            <span className="px-2 py-1 bg-white/25 backdrop-blur-sm text-white text-xs sm:text-[10px] font-semibold rounded-md">
+                              +{[...new Set(tallasDisponibles.map(v => v.talla))].length - 5}
                             </span>
                           )}
                         </div>
@@ -828,27 +838,17 @@ export default function PaginaCatalogo() {
         </div>
       )}
 
-      {/* Botón flotante de WhatsApp - Con animaciones */}
+      {/* Botón flotante de WhatsApp - Mejorado */}
       <a
         href={`https://wa.me/${WHATSAPP_VENDEDOR}?text=¡Hola!%20Vi%20tu%20catálogo%20👋`}
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed z-40 bottom-20 right-4 w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 text-white rounded-full shadow-xl shadow-green-500/50 flex items-center justify-center active:scale-90 transition-transform animate-bounce-slow hover-lift"
+        className="fixed z-40 bottom-20 right-4 w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 text-white rounded-full shadow-xl shadow-green-500/50 flex items-center justify-center active:scale-90 transition-transform animate-float"
       >
-        <svg viewBox="0 0 24 24" className="w-8 h-8 fill-current animate-wave">
+        <svg viewBox="0 0 24 24" className="w-7 h-7 fill-current">
           <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
         </svg>
-        {/* Anillo pulsante */}
-        <span className="absolute inset-0 rounded-full border-2 border-green-400 animate-ping opacity-30"></span>
       </a>
-
-      {/* Barra inferior con contacto - Con gradiente animado */}
-      <div className="fixed bottom-0 left-0 right-0 animate-gradient-bg p-3 flex items-center justify-center gap-2 shadow-lg">
-        <span className="animate-wave inline-block text-lg">👆</span>
-        <span className="text-sm text-white font-semibold drop-shadow-lg">
-          Toca cualquier producto para pedir
-        </span>
-      </div>
 
       {/* GALERÍA DE FOTOS A PANTALLA COMPLETA */}
       {galeriaAbierta && productoSeleccionado && modalListo && (
@@ -936,6 +936,122 @@ export default function PaginaCatalogo() {
         }
         .animate-slide-up { animation: slide-up 0.3s ease-out; }
       `}</style>
+
+      {/* Modal de Compartir */}
+      {modalCompartir && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          {/* Overlay */}
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setModalCompartir(false)}
+          />
+          
+          {/* Contenido del modal */}
+          <div className="relative bg-white dark:bg-slate-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl animate-slide-up">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Share2 className="w-6 h-6 text-blue-500" />
+                Compartir Catálogo
+              </h3>
+              <button
+                onClick={() => setModalCompartir(false)}
+                className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center active:scale-90 transition-transform"
+              >
+                <X className="w-5 h-5 text-slate-500" />
+              </button>
+            </div>
+
+            {/* Link del catálogo */}
+            <div className="mb-4">
+              <label className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-2 block">
+                Link del catálogo
+              </label>
+              <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-700 rounded-xl">
+                <span className="flex-1 text-sm text-slate-700 dark:text-slate-300 truncate font-mono">
+                  {typeof window !== 'undefined' ? window.location.origin + '/catalogo' : '/catalogo'}
+                </span>
+                <button
+                  onClick={copiarLink}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all active:scale-95",
+                    linkCopiado 
+                      ? "bg-green-500 text-white" 
+                      : "bg-blue-500 text-white hover:bg-blue-600"
+                  )}
+                >
+                  {linkCopiado ? (
+                    <>
+                      <Check className="w-4 h-4" />
+                      ¡Copiado!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" />
+                      Copiar
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Botón para generar QR */}
+            <button
+              onClick={() => setMostrarQR(!mostrarQR)}
+              className={cn(
+                "w-full flex items-center justify-center gap-3 p-4 rounded-xl font-semibold transition-all active:scale-95 mb-4",
+                mostrarQR
+                  ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
+                  : "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg"
+              )}
+            >
+              <QrCode className="w-6 h-6" />
+              {mostrarQR ? 'Ocultar código QR' : 'Generar código QR'}
+            </button>
+
+            {/* QR Code */}
+            {mostrarQR && (
+              <div className="flex flex-col items-center p-4 bg-white dark:bg-slate-700 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600">
+                <img 
+                  ref={qrRef}
+                  src={generarQRUrl()}
+                  alt="QR del catálogo"
+                  className="w-48 h-48 rounded-lg"
+                />
+                <p className="mt-3 text-sm text-slate-500 dark:text-slate-400 text-center">
+                  📱 Escanea para abrir el catálogo
+                </p>
+                <a
+                  href={generarQRUrl()}
+                  download={`qr-${NOMBRE_TIENDA.toLowerCase().replace(/\s+/g, '-')}.png`}
+                  className="mt-3 px-4 py-2 bg-slate-100 dark:bg-slate-600 rounded-lg text-sm font-medium text-slate-700 dark:text-white flex items-center gap-2 active:scale-95 transition-transform"
+                >
+                  ⬇️ Descargar QR
+                </a>
+              </div>
+            )}
+
+            {/* Compartir nativo (si está disponible) */}
+            {typeof navigator !== 'undefined' && navigator.share && (
+              <button
+                onClick={async () => {
+                  try {
+                    await navigator.share({
+                      title: NOMBRE_TIENDA,
+                      text: `¡Mira estos productos! 🛒`,
+                      url: window.location.origin + '/catalogo'
+                    })
+                  } catch (err) {}
+                }}
+                className="w-full mt-4 flex items-center justify-center gap-3 p-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-semibold shadow-lg active:scale-95 transition-transform"
+              >
+                <MessageCircle className="w-5 h-5" />
+                Compartir por WhatsApp / Apps
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
     </>
   )
