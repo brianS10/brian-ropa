@@ -596,27 +596,51 @@ export default function PaginaCatalogo() {
                       </div>
                     )}
 
-                    {/* Info del producto - superpuesto sobre la imagen */}
-                    <div className="absolute bottom-0 left-0 right-0 px-3 py-2 bg-black/60 backdrop-blur-sm rounded-b-xl flex flex-col items-center">
-                      <h3 className="font-bold text-white text-base sm:text-sm leading-tight mb-1.5 text-center">
-                        {producto.nombre}
-                      </h3>
-                      <div className="flex items-end gap-2">
-                        {descuento > 0 ? (
-                          <>
-                            <span className="text-white/70 text-xs line-through">
+                    {/* Info del producto - debajo de la imagen */}
+                    <div className="mt-2 flex flex-col items-center w-full">
+                      <div className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl shadow-lg px-2 py-2 flex flex-col items-center">
+                        <h3 className="font-bold text-slate-900 dark:text-white text-base sm:text-sm leading-tight mb-1.5 text-center">
+                          {producto.nombre}
+                        </h3>
+                        <div className="flex items-end gap-2">
+                          {descuento > 0 ? (
+                            <>
+                              <span className="text-slate-500 text-xs line-through">
+                                {formatearMoneda(precioMinimo)}
+                              </span>
+                              <span className="text-green-600 font-black text-xl sm:text-lg">
+                                {formatearMoneda(precioConDescuento)}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="text-blue-600 font-black text-xl sm:text-lg">
                               {formatearMoneda(precioMinimo)}
                             </span>
-                            <span className="text-green-400 font-black text-xl sm:text-lg">
-                              {formatearMoneda(precioConDescuento)}
-                            </span>
-                          </>
-                        ) : (
-                          <span className="text-white font-black text-xl sm:text-lg">
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Info del producto - debajo de la imagen */}
+                  <div className="mt-2 flex flex-col items-center">
+                    <h3 className="font-bold text-slate-900 dark:text-white text-base sm:text-sm leading-tight mb-1.5 text-center">
+                      {producto.nombre}
+                    </h3>
+                    <div className="flex items-end gap-2">
+                      {descuento > 0 ? (
+                        <>
+                          <span className="text-slate-500 text-xs line-through">
                             {formatearMoneda(precioMinimo)}
                           </span>
-                        )}
-                      </div>
+                          <span className="text-green-600 font-black text-xl sm:text-lg">
+                            {formatearMoneda(precioConDescuento)}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-blue-600 font-black text-xl sm:text-lg">
+                          {formatearMoneda(precioMinimo)}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
