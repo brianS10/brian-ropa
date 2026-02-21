@@ -65,7 +65,15 @@ export default function PaginaCatalogo() {
   const [modalCompartir, setModalCompartir] = useState(false)
   const [linkCopiado, setLinkCopiado] = useState(false)
   const [mostrarQR, setMostrarQR] = useState(false)
+  const [urlCatalogo, setUrlCatalogo] = useState('/catalogo')
   const qrRef = useRef(null)
+
+  // Obtener URL del catálogo solo en cliente
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setUrlCatalogo(window.location.origin + '/catalogo')
+    }
+  }, [])
 
   // Cuando se abre un producto, esperar un momento antes de permitir abrir galería
   useEffect(() => {
@@ -152,7 +160,14 @@ export default function PaginaCatalogo() {
   const esDestacado = (producto) => {
     const tieneVentas = (ventasPorProducto[producto.id] || 0) > 0
     const tieneDescuento = (producto.descuento || 0) > 0
-    const esNuevo = new Date(producto.creado_en) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // 7 días
+    // Verificar si es nuevo (creado en los últimos 7 días)
+    let esNuevo = false
+    if (producto.creado_en) {
+      const fechaCreacion = new Date(producto.creado_en)
+      const sieteDiasAtras = new Date()
+      sieteDiasAtras.setDate(sieteDiasAtras.getDate() - 7)
+      esNuevo = fechaCreacion > sieteDiasAtras
+    }
     return tieneVentas || tieneDescuento || esNuevo
   }
 
@@ -307,12 +322,12 @@ export default function PaginaCatalogo() {
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-b border-slate-200 dark:border-slate-700 shadow-sm">
-        <div className="p-4">
-          {/* Logo y título - Animado */}
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-3">
+        <div className="p-2 pb-2">
+          {/* Logo y título - Compacto */}
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
               <div className={cn(
-                'w-14 h-14 bg-gradient-to-br rounded-2xl flex items-center justify-center shadow-lg animate-float',
+                'w-9 h-9 bg-gradient-to-br rounded-xl flex items-center justify-center shadow-md',
                 tipoActivo === 'ropa' ? 'from-blue-500 to-cyan-500 shadow-blue-500/30' :
                 tipoActivo === 'perfumes' ? 'from-pink-500 to-rose-500 shadow-pink-500/30' :
                 tipoActivo === 'juguetes' ? 'from-yellow-500 to-orange-500 shadow-yellow-500/30' :
@@ -321,81 +336,80 @@ export default function PaginaCatalogo() {
                 <img 
                   src={LOGO_TIENDA} 
                   alt={NOMBRE_TIENDA}
-                  className="w-10 h-10 object-contain"
+                  className="w-6 h-6 object-contain"
                 />
               </div>
               <div>
-                <h1 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                <h1 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-1">
                   {NOMBRE_TIENDA}
-                  <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                  <span className="inline-block w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
                 </h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400">✨ Catálogo actualizado</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <ToggleTema />
               <button
                 onClick={compartirCatalogo}
-                className="w-11 h-11 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center active:scale-90 transition-transform tap-feedback"
+                className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center active:scale-90 transition-transform tap-feedback"
               >
-                <Share2 className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                <Share2 className="w-4 h-4 text-slate-600 dark:text-slate-400" />
               </button>
             </div>
           </div>
 
-          {/* Buscador mejorado */}
-          <div className="relative mb-4">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+          {/* Buscador compacto */}
+          <div className="relative mb-2">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
-              placeholder="¿Qué estás buscando? 🔍"
+              placeholder="Buscar producto..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 bg-slate-100 dark:bg-slate-800 rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base border-2 border-transparent focus:border-blue-500/30 transition-all"
+              className="w-full pl-10 pr-3 py-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm border-2 border-transparent focus:border-blue-500/30 transition-all"
             />
             {busqueda && (
               <button
                 onClick={() => setBusqueda('')}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 active:scale-90 transition-transform"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 active:scale-90 transition-transform"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             )}
           </div>
         </div>
 
-        {/* Tipos de producto */}
-        <div className="flex gap-2 px-4 pb-3 overflow-x-auto no-scrollbar">
+        {/* Tipos de producto - Compacto */}
+        <div className="flex gap-1 px-2 pb-2 overflow-x-auto no-scrollbar">
           {TIPOS_PRODUCTO.map((tipo, idx) => (
             <button
               key={tipo.valor}
               onClick={() => cambiarTipo(tipo.valor)}
               className={cn(
-                'flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-bold whitespace-nowrap transition-all border-2 tap-feedback',
+                'flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all border tap-feedback',
                 tipoActivo === tipo.valor
-                  ? `bg-gradient-to-r ${tipo.color} text-white border-transparent shadow-lg scale-105`
+                  ? `bg-gradient-to-r ${tipo.color} text-white border-transparent shadow-md scale-105`
                   : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 active:scale-95'
               )}
               style={{ animationDelay: `${idx * 0.05}s` }}
             >
-              <span className="text-lg">{tipo.emoji}</span>
+              <span className="text-base">{tipo.emoji}</span>
               <span>{tipo.etiqueta}</span>
             </button>
           ))}
         </div>
 
-        {/* Categorías (solo si no es "todos") - Mejorado */}
+        {/* Categorías - Compacto */}
         {tipoActivo !== 'todos' && CATEGORIAS_CATALOGO[tipoActivo] && (
-          <div className="flex gap-2 px-4 pb-4 overflow-x-auto no-scrollbar">
+          <div className="flex gap-1 px-2 pb-2 overflow-x-auto no-scrollbar">
             {CATEGORIAS_CATALOGO[tipoActivo].map((cat, idx) => (
               <button
                 key={cat.valor}
                 onClick={() => setCategoriaActiva(cat.valor)}
                 className={cn(
-                  'flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all tap-feedback',
+                  'flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all tap-feedback',
                   categoriaActiva === cat.valor
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/30 scale-105'
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md scale-105'
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 active:scale-95'
                 )}
                 style={{ animationDelay: `${idx * 0.03}s` }}
@@ -409,27 +423,20 @@ export default function PaginaCatalogo() {
       </header>
 
       {/* Contenido */}
-      <main className="p-4 pb-28">
-        {/* Barra de filtros y ordenamiento */}
-        <div className="flex items-center justify-between mb-4 gap-2">
-          {/* Contador */}
-          <p className="text-sm text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1.5">
-            <span className="inline-block w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500"></span>
-            <span className="font-bold text-slate-700 dark:text-slate-200">{productosFiltrados.length}</span>
-            <span>productos</span>
-          </p>
-          
+      <main className="p-2 pb-24">
+        {/* Barra de filtros y ordenamiento - Compacta */}
+        <div className="flex items-center justify-end mb-2 gap-2">
           {/* Botón de ordenar */}
           <div className="relative">
             <button
               onClick={() => setMostrarOrden(!mostrarOrden)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-full text-xs font-semibold text-slate-600 dark:text-slate-400 tap-feedback"
+              className="flex items-center gap-1 px-2 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-full text-xs font-semibold text-slate-600 dark:text-slate-400 tap-feedback"
             >
-              <SlidersHorizontal className="w-3.5 h-3.5" />
+              <SlidersHorizontal className="w-3 h-3" />
               <span className="hidden sm:inline">
                 {OPCIONES_ORDEN.find(o => o.valor === ordenActivo)?.etiqueta || 'Ordenar'}
               </span>
-              <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", mostrarOrden && "rotate-180")} />
+              <ChevronDown className={cn("w-3 h-3 transition-transform", mostrarOrden && "rotate-180")} />
             </button>
             
             {/* Dropdown de ordenamiento */}
@@ -488,7 +495,7 @@ export default function PaginaCatalogo() {
             </a>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-4 px-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 sm:gap-3 sm:px-0">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
             {productosFiltrados.map((producto, index) => {
               const precioMinimo = obtenerPrecioMinimo(producto.variantes_producto)
               const tallasDisponibles = obtenerTallasDisponibles(producto.variantes_producto)
@@ -516,11 +523,11 @@ export default function PaginaCatalogo() {
                   )}
                   style={{ animationDelay: `${index * 0.05}s` }}
                 >
-                  {/* Tarjeta del producto - Más alta en móvil */}
+                  {/* Tarjeta del producto - Más alta */}
                   <div className={cn(
-                    "relative aspect-[3/5] sm:aspect-[3/4] rounded-2xl overflow-hidden shadow-lg transition-all duration-300",
+                    "relative aspect-[2/3] rounded-xl overflow-hidden shadow-md transition-all duration-300",
                     "bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600",
-                    "group-active:scale-95",
+                    "group-active:scale-[0.98]",
                     descuento > 0 && !agotado && "ring-2 ring-red-500 animate-glow",
                     esMasVendido && !descuento && !agotado && "ring-2 ring-yellow-400"
                   )}>
@@ -969,7 +976,7 @@ export default function PaginaCatalogo() {
               </label>
               <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-700 rounded-xl">
                 <span className="flex-1 text-sm text-slate-700 dark:text-slate-300 truncate font-mono">
-                  {typeof window !== 'undefined' ? window.location.origin + '/catalogo' : '/catalogo'}
+                  {urlCatalogo}
                 </span>
                 <button
                   onClick={copiarLink}

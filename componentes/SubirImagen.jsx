@@ -176,16 +176,16 @@ export default function SubirImagen({
           </div>
         ))}
 
-        {/* Botón para agregar */}
+        {/* Botones para agregar - Layout horizontal */}
         {imagenes.length < maxImagenes && (
-          <div className="aspect-square rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-600 overflow-hidden">
+          <div className="col-span-full">
             {subiendo ? (
-              <div className="w-full h-full flex flex-col items-center justify-center gap-1 bg-blue-50 dark:bg-blue-900/20">
-                <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
-                <span className="text-xs text-blue-500">Subiendo...</span>
+              <div className="h-24 rounded-xl border-2 border-dashed border-blue-300 dark:border-blue-600 flex items-center justify-center gap-3 bg-blue-50 dark:bg-blue-900/20">
+                <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+                <span className="text-base font-medium text-blue-500">Subiendo...</span>
               </div>
             ) : (
-              <div className="w-full h-full flex flex-col">
+              <div className="grid grid-cols-2 gap-3">
                 {/* Botón cámara */}
                 <button
                   type="button"
@@ -195,10 +195,10 @@ export default function SubirImagen({
                       inputRef.current.click()
                     }
                   }}
-                  className="flex-1 flex flex-col items-center justify-center gap-2 hover:bg-green-50 dark:hover:bg-green-900/20 active:bg-green-100 transition-colors border-b border-dashed border-slate-300 dark:border-slate-600"
+                  className="h-24 flex items-center justify-center gap-3 rounded-xl border-2 border-dashed border-green-300 dark:border-green-600 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 active:scale-95 transition-all"
                 >
-                  <span className="text-3xl">📷</span>
-                  <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Tomar Foto</span>
+                  <span className="text-4xl">📷</span>
+                  <span className="text-base font-bold text-green-700 dark:text-green-400">Tomar Foto</span>
                 </button>
                 {/* Botón galería */}
                 <button
@@ -209,10 +209,10 @@ export default function SubirImagen({
                       inputRef.current.click()
                     }
                   }}
-                  className="flex-1 flex flex-col items-center justify-center gap-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 active:bg-blue-100 transition-colors"
+                  className="h-24 flex items-center justify-center gap-3 rounded-xl border-2 border-dashed border-blue-300 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 active:scale-95 transition-all"
                 >
-                  <Upload className="w-8 h-8 text-blue-500" />
-                  <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Galería</span>
+                  <Upload className="w-10 h-10 text-blue-500" />
+                  <span className="text-base font-bold text-blue-700 dark:text-blue-400">Galería</span>
                 </button>
               </div>
             )}
