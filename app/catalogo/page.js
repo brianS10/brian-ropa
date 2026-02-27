@@ -50,6 +50,7 @@ export default function PaginaCatalogo() {
   const [categoriaActiva, setCategoriaActiva] = useState('todos')
   const [productoSeleccionado, setProductoSeleccionado] = useState(null)
   const [tallaSeleccionada, setTallaSeleccionada] = useState(null)
+  const [metodoPago, setMetodoPago] = useState('efectivo') // Nuevo: método de pago
   const [galeriaAbierta, setGaleriaAbierta] = useState(false)
   const [imagenGaleriaActiva, setImagenGaleriaActiva] = useState(0)
   const [modalListo, setModalListo] = useState(false) // Evita clicks accidentales al abrir
@@ -225,7 +226,6 @@ export default function PaginaCatalogo() {
     const descuento = producto.descuento || 0
     const precioFinal = descuento > 0 ? precioBase * (1 - descuento / 100) : precioBase
     const tipoProducto = producto.tipo_producto || 'ropa'
-    
     // Etiqueta según tipo de producto
     const getEtiqueta = (tipo) => {
       switch (tipo) {
@@ -234,7 +234,6 @@ export default function PaginaCatalogo() {
         default: return 'Talla'
       }
     }
-    
     let mensaje = `¡Hola! 👋\n\nMe interesa este producto:\n\n`
     mensaje += `📦 *${producto.nombre}*\n`
     if (variante) {
@@ -253,8 +252,14 @@ export default function PaginaCatalogo() {
     } else {
       mensaje += `💰 Precio: ${formatearMoneda(precioBase)}\n\n`
     }
+    // Agregar método de pago
+    const metodo = {
+      efectivo: 'Efectivo',
+      transferencia: 'Transferencia',
+      tarjeta: 'Tarjeta',
+    }[metodoPago] || 'Efectivo';
+    mensaje += `💳 Método de pago: *${metodo}*\n\n`;
     mensaje += `¿Está disponible? 🙏`
-    
     const url = `https://wa.me/${WHATSAPP_VENDEDOR}?text=${encodeURIComponent(mensaje)}`
     window.open(url, '_blank')
   }
@@ -776,7 +781,6 @@ export default function PaginaCatalogo() {
                 const estaAgotado = stockProducto === 0
                 const tallasConStock = obtenerTallasDisponibles(productoSeleccionado.variantes_producto)
                 const esRopa = (productoSeleccionado.tipo_producto || 'ropa') === 'ropa'
-                
                 return estaAgotado ? (
                   <div className="text-center py-8">
                     <div className="text-6xl mb-3 animate-float">😔</div>
@@ -831,7 +835,40 @@ export default function PaginaCatalogo() {
                         </div>
                       </div>
                     )}
-
+                    {/* Selector de método de pago */}
+                    <div className="mb-5">
+                      <label className="text-2xl font-extrabold text-blue-700 dark:text-blue-300 mb-4 block text-center tracking-wide">
+                        <span className="inline-block bg-blue-100 dark:bg-blue-900/30 px-4 py-2 rounded-xl shadow-md">
+                          Seleccione método de pago
+                        </span>
+                      </label>
+                      <div className="grid grid-cols-3 gap-2">
+                        <button
+                          className={cn('flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all',
+                            metodoPago === 'efectivo' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-600' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 text-slate-600 dark:text-slate-400')}
+                          onClick={() => setMetodoPago('efectivo')}
+                        >
+                          <span className="text-xl">💵</span>
+                          <span className="text-xs font-medium">Efectivo</span>
+                        </button>
+                        <button
+                          className={cn('flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all',
+                            metodoPago === 'transferencia' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-600' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 text-slate-600 dark:text-slate-400')}
+                          onClick={() => setMetodoPago('transferencia')}
+                        >
+                          <span className="text-xl">📱</span>
+                          <span className="text-xs font-medium">Transferencia</span>
+                        </button>
+                        <button
+                          className={cn('flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all',
+                            metodoPago === 'tarjeta' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-600' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 text-slate-600 dark:text-slate-400')}
+                          onClick={() => setMetodoPago('tarjeta')}
+                        >
+                          <span className="text-xl">💳</span>
+                          <span className="text-xs font-medium">Tarjeta</span>
+                        </button>
+                      </div>
+                    </div>
                     {/* Botón de compra mejorado */}
                     <button
                       onClick={() => pedirPorWhatsApp(productoSeleccionado, tallaSeleccionada)}
@@ -845,7 +882,6 @@ export default function PaginaCatalogo() {
                       <MessageCircle className="w-6 h-6" />
                       <span>{tallaSeleccionada ? '¡Lo quiero! 🛒' : 'Pedir por WhatsApp'}</span>
                     </button>
-                    
                     <p className="text-center text-sm text-slate-500 dark:text-slate-400 mt-3 flex items-center justify-center gap-2">
                       <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                       Respuesta en menos de 5 minutos
