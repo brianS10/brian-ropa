@@ -9,9 +9,8 @@
 
 import { create } from 'zustand'
 
-// PIN de administrador (puedes cambiarlo)
-// En producción esto debería estar en variables de entorno
-const PIN_ADMIN = '1234'
+// PIN de administrador (configurado en .env.local)
+const PIN_ADMIN = process.env.NEXT_PUBLIC_ADMIN_PIN || '1234'
 
 export const usarAutenticacion = create((set, get) => ({
   estaAutenticado: false,
@@ -20,10 +19,10 @@ export const usarAutenticacion = create((set, get) => ({
   // Verificar si hay sesión guardada
   verificarSesion: () => {
     if (typeof window === 'undefined') return false
-    
+
     const sesion = sessionStorage.getItem('admin_autenticado')
     const autenticado = sesion === 'true'
-    
+
     set({ estaAutenticado: autenticado, verificado: true })
     return autenticado
   },

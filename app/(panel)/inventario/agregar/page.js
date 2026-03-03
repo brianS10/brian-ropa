@@ -14,7 +14,7 @@ import { supabase, estaConfigurado } from '@/lib/base_datos/cliente_supabase'
 import BotonPrimario from '@/componentes/ui/BotonPrimario'
 import EntradaTexto from '@/componentes/ui/EntradaTexto'
 import SubirImagen from '@/componentes/SubirImagen'
-import { CATEGORIAS, TALLAS_ESTANDAR, COLORES_COMUNES, TIPOS_PRODUCTO, CATEGORIAS_POR_TIPO, TAMANOS_PERFUMES, EDADES_JUGUETES } from '@/lib/constantes'
+import { CATEGORIAS, TALLAS_ESTANDAR, COLORES_ROPA, TIPOS_PRODUCTO, CATEGORIAS_POR_TIPO, TAMANOS_PERFUMES, EDADES_JUGUETES } from '@/lib/constantes'
 
 export default function PaginaAgregarProducto() {
   const router = useRouter()
@@ -200,7 +200,11 @@ export default function PaginaAgregarProducto() {
       <div className="space-y-4 mb-6">
         <EntradaTexto
           etiqueta="Nombre del producto"
-          placeholder="Ej: Jeans Slim Fit Azul"
+          placeholder={
+            producto.tipo_producto === 'perfumes' ? 'Ej: Perfume Acqua Di Gio 100ml' :
+            producto.tipo_producto === 'juguetes' ? 'Ej: Peluche Oso Gigante' :
+            'Ej: Jeans Slim Fit Azul'
+          }
           value={producto.nombre}
           onChange={(e) => setProducto({ ...producto, nombre: e.target.value })}
         />
@@ -266,7 +270,7 @@ export default function PaginaAgregarProducto() {
         <SubirImagen
           imagenes={imagenes}
           onImagenesChange={setImagenes}
-          maxImagenes={5}
+          maxImagenes={10}
         />
       </div>
 
@@ -332,7 +336,7 @@ export default function PaginaAgregarProducto() {
                       onChange={(e) => actualizarVariante(indice, 'color', e.target.value)}
                       className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 py-1.5 text-sm"
                     >
-                      {COLORES_COMUNES.map(c => (
+                      {COLORES_ROPA.map(c => (
                         <option key={c} value={c}>{c}</option>
                       ))}
                     </select>

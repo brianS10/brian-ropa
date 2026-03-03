@@ -11,11 +11,11 @@ import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react'
 import { supabase, estaConfigurado } from '@/lib/base_datos/cliente_supabase'
 import { cn } from '@/lib/utilidades'
 
-export default function SubirImagen({ 
-  imagenes = [], 
-  onImagenesChange, 
+export default function SubirImagen({
+  imagenes = [],
+  onImagenesChange,
   maxImagenes = 5,
-  productoId = null 
+  productoId = null
 }) {
   const [subiendo, setSubiendo] = useState(false)
   const [error, setError] = useState('')
@@ -112,7 +112,7 @@ export default function SubirImagen({
 
     if (nuevoIndice < 0 || nuevoIndice >= imagenes.length) return
 
-    [nuevasImagenes[indice], nuevasImagenes[nuevoIndice]] = 
+    [nuevasImagenes[indice], nuevasImagenes[nuevoIndice]] =
       [nuevasImagenes[nuevoIndice], nuevasImagenes[indice]]
 
     onImagenesChange(nuevasImagenes)
@@ -128,16 +128,16 @@ export default function SubirImagen({
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
         {/* Imágenes existentes */}
         {imagenes.map((url, indice) => (
-          <div 
+          <div
             key={indice}
             className="relative aspect-square rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 group"
           >
-            <img 
-              src={url} 
+            <img
+              src={url}
               alt={`Foto ${indice + 1}`}
               className="w-full h-full object-cover"
             />
-            
+
             {/* Badge de imagen principal */}
             {indice === 0 && (
               <span className="absolute top-1 left-1 bg-blue-600 text-white text-[10px] px-1.5 py-0.5 rounded font-medium">
@@ -237,7 +237,7 @@ export default function SubirImagen({
 
       {/* Ayuda */}
       <p className="text-xs text-slate-500">
-        📸 Toma fotos o sube desde galería. La primera será la principal. Máx 5MB c/u.
+        📸 Toma fotos o sube desde galería. La primera será la principal. Máx {maxImagenes} fotos, 5MB c/u.
       </p>
     </div>
   )

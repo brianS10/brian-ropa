@@ -14,7 +14,7 @@ import { supabase, estaConfigurado } from '@/lib/base_datos/cliente_supabase'
 import BotonPrimario from '@/componentes/ui/BotonPrimario'
 import SubirImagen from '@/componentes/SubirImagen'
 import { formatearMoneda } from '@/lib/utilidades'
-import { TIPOS_PRODUCTO, CATEGORIAS_POR_TIPO, TALLAS_ESTANDAR, COLORES_COMUNES, TAMANOS_PERFUMES, EDADES_JUGUETES } from '@/lib/constantes'
+import { TIPOS_PRODUCTO, CATEGORIAS_POR_TIPO, TALLAS_ESTANDAR, COLORES_ROPA, TAMANOS_PERFUMES, EDADES_JUGUETES } from '@/lib/constantes'
 
 export default function PaginaEditarStock() {
   const router = useRouter()
@@ -113,7 +113,7 @@ export default function PaginaEditarStock() {
       for (const variante of variantesModificadas) {
         const { error } = await supabase
           .from('variantes_producto')
-          .update({ 
+          .update({
             stock_actual: variante.stock_actual,
             precio_venta: variante.precio_venta,
             precio_costo: variante.precio_costo
@@ -126,7 +126,7 @@ export default function PaginaEditarStock() {
       // Actualizar producto (nombre, categoría, descripción, imágenes, descuento)
       const { error: errorProducto } = await supabase
         .from('productos')
-        .update({ 
+        .update({
           nombre: producto.nombre,
           descripcion: producto.descripcion,
           categoria: producto.categoria,
@@ -141,7 +141,7 @@ export default function PaginaEditarStock() {
 
       setMensaje({ tipo: 'exito', texto: '¡Cambios guardados!' })
       setProductoModificado(false)
-      
+
       // Limpiar bandera de modificado
       setVariantes(variantes.map(v => ({ ...v, modificado: false })))
 
@@ -169,7 +169,7 @@ export default function PaginaEditarStock() {
     <div className="p-4 pb-24">
       {/* Encabezado */}
       <header className="flex items-center gap-3 mb-4">
-        <Link 
+        <Link
           href="/inventario"
           className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800"
         >
@@ -187,31 +187,28 @@ export default function PaginaEditarStock() {
       <div className="flex gap-1 mb-4 bg-slate-100 dark:bg-slate-800 rounded-xl p-1">
         <button
           onClick={() => setPestana('info')}
-          className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-colors ${
-            pestana === 'info'
+          className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-colors ${pestana === 'info'
               ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm'
               : 'text-slate-600 dark:text-slate-400'
-          }`}
+            }`}
         >
           ✏️ Info
         </button>
         <button
           onClick={() => setPestana('stock')}
-          className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-colors ${
-            pestana === 'stock'
+          className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-colors ${pestana === 'stock'
               ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm'
               : 'text-slate-600 dark:text-slate-400'
-          }`}
+            }`}
         >
           📦 Stock
         </button>
         <button
           onClick={() => setPestana('imagenes')}
-          className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-colors ${
-            pestana === 'imagenes'
+          className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-colors ${pestana === 'imagenes'
               ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm'
               : 'text-slate-600 dark:text-slate-400'
-          }`}
+            }`}
         >
           📷 Fotos
         </button>
@@ -219,11 +216,10 @@ export default function PaginaEditarStock() {
 
       {/* Mensaje */}
       {mensaje.texto && (
-        <div className={`mb-4 p-3 rounded-lg ${
-          mensaje.tipo === 'error' 
+        <div className={`mb-4 p-3 rounded-lg ${mensaje.tipo === 'error'
             ? 'bg-red-100 text-red-700'
             : 'bg-green-100 text-green-700'
-        }`}>
+          }`}>
           {mensaje.texto}
         </div>
       )}
@@ -343,13 +339,12 @@ export default function PaginaEditarStock() {
             </label>
             <div className="space-y-3">
               {variantes.map((variante) => (
-                <div 
+                <div
                   key={variante.id}
-                  className={`bg-white dark:bg-slate-800 rounded-xl border p-3 ${
-                    variante.modificado 
-                      ? 'border-blue-500' 
+                  className={`bg-white dark:bg-slate-800 rounded-xl border p-3 ${variante.modificado
+                      ? 'border-blue-500'
                       : 'border-slate-200 dark:border-slate-700'
-                  }`}
+                    }`}
                 >
                   <div className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     {variante.talla}{variante.color && variante.color !== 'Sin especificar' ? ` · ${variante.color}` : ''}
@@ -407,10 +402,10 @@ export default function PaginaEditarStock() {
               setImagenes(nuevas)
               setProductoModificado(true)
             }}
-            maxImagenes={5}
+            maxImagenes={10}
             productoId={productoId}
           />
-          
+
           {hayModificaciones && (
             <BotonPrimario
               onClick={guardarCambios}
@@ -429,13 +424,12 @@ export default function PaginaEditarStock() {
       {pestana === 'stock' && (
         <div className="space-y-3">
           {variantes.map((variante) => (
-            <div 
+            <div
               key={variante.id}
-              className={`bg-white dark:bg-slate-800 rounded-xl border p-4 ${
-                variante.modificado 
-                  ? 'border-blue-500' 
+              className={`bg-white dark:bg-slate-800 rounded-xl border p-4 ${variante.modificado
+                  ? 'border-blue-500'
                   : 'border-slate-200 dark:border-slate-700'
-              }`}
+                }`}
             >
               <div className="flex items-center justify-between mb-3">
                 <div>
@@ -459,14 +453,14 @@ export default function PaginaEditarStock() {
                 >
                   <Minus className="w-6 h-6" />
                 </button>
-                
+
                 <input
                   type="number"
                   value={variante.stock_actual}
                   onChange={(e) => establecerStock(variante.id, e.target.value)}
                   className="w-20 h-12 text-center text-2xl font-bold rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700"
                 />
-                
+
                 <button
                   onClick={() => modificarStock(variante.id, 1)}
                   className="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center hover:bg-green-200 transition-colors"
